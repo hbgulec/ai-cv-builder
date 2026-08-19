@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';
 
@@ -9,6 +10,7 @@ class AppButton extends StatelessWidget {
   final bool isLoading;
   final bool isSecondary;
   final bool isFullWidth;
+  final bool compact;
 
   const AppButton({
     super.key,
@@ -18,69 +20,82 @@ class AppButton extends StatelessWidget {
     this.isLoading = false,
     this.isSecondary = false,
     this.isFullWidth = false,
+    this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final foreground = isSecondary ? AppColors.textPrimary : Colors.white;
     final childWidget = Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (isLoading) ...[
-          const SizedBox(
-            width: 18,
-            height: 18,
+        if (isLoading)
+          SizedBox(
+            width: 16,
+            height: 16,
             child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(foreground),
             ),
-          ),
-          const SizedBox(width: 8),
-        ] else if (icon != null) ...[
-          Icon(icon, size: 18, color: Colors.white),
-          const SizedBox(width: 8),
-        ],
-        Text(
-          text,
-          style: AppTypography.titleMedium.copyWith(
-            fontSize: 14,
-            color: Colors.white,
+          )
+        else if (icon != null)
+          Icon(icon, size: compact ? 15 : 17, color: foreground),
+        if (isLoading || icon != null) const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.labelMedium.copyWith(
+              fontSize: compact ? 11 : 13,
+              letterSpacing: 0,
+              color: foreground,
+            ),
           ),
         ),
       ],
     );
 
-    return SizedBox(
-      width: isFullWidth ? double.infinity : null,
-      height: 46,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: isSecondary ? null : AppColors.primaryGradient,
-          color: isSecondary ? AppColors.darkCard : null,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: isSecondary
-              ? null
-              : [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.35),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-        ),
-        child: ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+    final button = SizedBox(
+      height: compact ? 38 : 44,
+      child: isSecondary
+          ? OutlinedButton(
+              onPressed: isLoading ? null : onPressed,
+              child: childWidget,
+            )
+          : DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: onPressed == null ? null : AppColors.primaryGradient,
+                color: onPressed == null
+                    ? AppColors.glassBackgroundStrong
+                    : null,
+                borderRadius: BorderRadius.circular(9),
+                boxShadow: onPressed == null
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.26),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+              ),
+              child: ElevatedButton(
+                onPressed: isLoading ? null : onPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  disabledBackgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16),
+                ),
+                child: childWidget,
+              ),
             ),
-          ),
-          child: childWidget,
-        ),
-      ),
     );
+
+    return isFullWidth
+        ? SizedBox(width: double.infinity, child: button)
+        : button;
   }
 }

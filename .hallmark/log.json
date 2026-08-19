@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-08-18",
+    "macrostructure": "mobile workbench",
+    "theme": "soft-glass-refined",
+    "enrichment": "atmospheric planes",
+    "brief": "Aligned the Flutter app with the approved Soft Glass Refined mobile concept",
+    "scope": "app"
+  },
+  {
     "date": "2026-08-16",
     "macrostructure": "workbench",
     "theme": "modern-minimal",

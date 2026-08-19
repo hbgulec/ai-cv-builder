@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
-import '../../../features/resume_builder/presentation/screens/resume_dashboard_screen.dart';
+import '../../../features/resume_builder/presentation/screens/soft_glass_dashboard_screen.dart';
 import '../../../features/resume_builder/presentation/screens/resume_editor_screen.dart';
-import '../../../features/resume_builder/presentation/screens/template_selection_screen.dart';
+import '../../../features/resume_builder/presentation/screens/soft_glass_template_selection_screen.dart';
 import '../../../features/resume_builder/presentation/screens/resume_view_screen.dart';
 
 /// GoRouter-based navigation configuration for AI CV Builder.
@@ -12,7 +12,7 @@ class AppRouter {
       GoRoute(
         path: '/',
         name: 'dashboard',
-        builder: (context, state) => const ResumeDashboardScreen(),
+        builder: (context, state) => const SoftGlassDashboardScreen(),
       ),
       GoRoute(
         path: '/editor',
@@ -25,7 +25,7 @@ class AppRouter {
       GoRoute(
         path: '/template-select',
         name: 'template-select',
-        builder: (context, state) => const TemplateSelectionScreen(),
+        builder: (context, state) => const SoftGlassTemplateSelectionScreen(),
       ),
       GoRoute(
         path: '/view',

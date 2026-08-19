@@ -1,18 +1,13 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:ai_cv_builder/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../../app/theme/app_colors.dart';
-import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/soft_glass_shell.dart';
 import '../../domain/entities/resume_entity.dart';
 import '../providers/resume_provider.dart';
 
-/// Interactive Resume Editor screen with Form Wizard on the left
-/// and full dynamic EN/TR localization.
 class ResumeEditorScreen extends ConsumerStatefulWidget {
   final String? resumeId;
 
@@ -23,50 +18,53 @@ class ResumeEditorScreen extends ConsumerStatefulWidget {
 }
 
 class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
-  late TextEditingController _cvTitleController;
-  late TextEditingController _nameController;
-  late TextEditingController _titleController;
-  late TextEditingController _emailController;
-  late TextEditingController _phoneController;
-  late TextEditingController _locationController;
-  late TextEditingController _summaryController;
+  late final TextEditingController _cvTitleController;
+  late final TextEditingController _nameController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _locationController;
+  late final TextEditingController _summaryController;
 
   @override
   void initState() {
     super.initState();
 
-    // If resumeId is provided, load the saved resume into the editor
     if (widget.resumeId != null) {
       final savedResumes = ref.read(savedResumesProvider);
-      final savedResume = savedResumes.where((r) => r.id == widget.resumeId).firstOrNull;
+      ResumeEntity? savedResume;
+      for (final resume in savedResumes) {
+        if (resume.id == widget.resumeId) {
+          savedResume = resume;
+          break;
+        }
+      }
       if (savedResume != null) {
-        // Schedule post-frame to avoid modifying provider during build
+        final loadedResume = savedResume;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          ref.read(resumeEditorProvider.notifier).loadResume(savedResume);
+          ref.read(resumeEditorProvider.notifier).loadResume(loadedResume);
         });
-        // Initialize controllers with saved data
-        _cvTitleController = TextEditingController(text: savedResume.title);
-        _nameController = TextEditingController(text: savedResume.header.fullName);
-        _titleController = TextEditingController(text: savedResume.header.professionalTitle ?? '');
-        _emailController = TextEditingController(text: savedResume.header.email ?? '');
-        _phoneController = TextEditingController(text: savedResume.header.phone ?? '');
-        _locationController = TextEditingController(text: savedResume.header.location ?? '');
-        _summaryController = TextEditingController(text: savedResume.summary);
+        _cvTitleController = TextEditingController(text: loadedResume.title);
+        _nameController = TextEditingController(text: loadedResume.header.fullName);
+        _titleController = TextEditingController(text: loadedResume.header.professionalTitle ?? '');
+        _emailController = TextEditingController(text: loadedResume.header.email ?? '');
+        _phoneController = TextEditingController(text: loadedResume.header.phone ?? '');
+        _locationController = TextEditingController(text: loadedResume.header.location ?? '');
+        _summaryController = TextEditingController(text: loadedResume.summary);
         return;
       }
     }
 
-    // If no resumeId is provided, initialize a brand new blank resume with a fresh unique ID
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(resumeEditorProvider.notifier).resetNewResume();
     });
-    _cvTitleController = TextEditingController(text: '');
-    _nameController = TextEditingController(text: '');
-    _titleController = TextEditingController(text: '');
-    _emailController = TextEditingController(text: '');
-    _phoneController = TextEditingController(text: '');
-    _locationController = TextEditingController(text: '');
-    _summaryController = TextEditingController(text: '');
+    _cvTitleController = TextEditingController();
+    _nameController = TextEditingController();
+    _titleController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _locationController = TextEditingController();
+    _summaryController = TextEditingController();
   }
 
   @override
@@ -88,142 +86,181 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.darkBackgroundGradient,
-        ),
+      backgroundColor: Colors.transparent,
+      body: SoftGlassBackground(
         child: SafeArea(
           child: Column(
             children: [
-              // Top Bar
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.glassBackground,
-                  border: Border(bottom: BorderSide(color: AppColors.glassBorder)),
-                ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
-                          onPressed: () => context.pop(),
-                        ),
-                        const SizedBox(width: 4),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              editorState.resume.title.isNotEmpty ? editorState.resume.title : l10n.personalInfo,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            Text(
-                              l10n.autoSavedLocally,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                    IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            editorState.resume.title.isNotEmpty ? editorState.resume.title : l10n.personalInfo,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(l10n.autoSavedLocally, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(color: AppColors.glassBackground, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.glassBorder)),
+                      child: Text('Step ${editorState.activeStep + 1}/5', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 11)),
                     ),
                   ],
                 ),
               ),
-
-              // Full Width Form Workspace
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GlassCard(
+                  borderRadius: 12,
+                  blur: 16,
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
                     children: [
-                      // Step Navigation Tabs
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
+                      Container(
+                        width: 42,
+                        height: 42,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.cyan, width: 2),
+                        ),
+                        child: Text(
+                          '${editorState.resume.atsScore}',
+                          style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 13),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _stepTab(0, l10n.headerStep, Icons.person_outline, editorState, notifier),
-                            _stepTab(1, l10n.experienceStep, Icons.work_outline_rounded, editorState, notifier),
-                            _stepTab(2, l10n.educationStep, Icons.school_outlined, editorState, notifier),
-                            _stepTab(3, l10n.projectsStep, Icons.folder_special_outlined, editorState, notifier),
-                            _stepTab(4, l10n.skillsStep, Icons.stars_rounded, editorState, notifier),
-                            _stepTab(5, l10n.summaryStep, Icons.subject_rounded, editorState, notifier),
-                            _stepTab(6, l10n.photoStep, Icons.photo_camera_outlined, editorState, notifier),
+                            Text(
+                              l10n.atsScoreLabel,
+                              style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 7),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(2),
+                              child: LinearProgressIndicator(
+                                value: (editorState.activeStep + 1) / 5,
+                                minHeight: 4,
+                                backgroundColor: Colors.white.withValues(alpha: 0.1),
+                                valueColor: const AlwaysStoppedAnimation(AppColors.cyan),
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              l10n.stepProgress(editorState.activeStep + 1, 5),
+                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 9),
+                            ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-
-                      // Step Form Content Card
-                      Expanded(
-                        child: GlassCard(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: IndexedStack(
-                                  index: editorState.activeStep,
-                                  children: [
-                                    _buildHeaderForm(notifier, l10n),
-                                    _buildExperienceForm(editorState, notifier, l10n),
-                                    _buildEducationForm(editorState, notifier, l10n),
-                                    _buildProjectsForm(editorState, notifier, l10n),
-                                    _buildSkillsForm(editorState, notifier, l10n),
-                                    _buildSummaryForm(notifier, l10n),
-                                    _buildPhotoForm(editorState, notifier, l10n),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              
-                              // Form Step Bottom Controls
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  if (editorState.activeStep > 0)
-                                    OutlinedButton.icon(
-                                      onPressed: () => notifier.updateStep(editorState.activeStep - 1),
-                                      icon: const Icon(Icons.arrow_back, size: 16, color: AppColors.textSecondary),
-                                      label: Text(l10n.previous, style: const TextStyle(color: AppColors.textSecondary)),
-                                      style: OutlinedButton.styleFrom(
-                                        side: BorderSide(color: AppColors.glassBorder),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                    )
-                                  else
-                                    const SizedBox.shrink(),
-
-                                  if (editorState.activeStep < 6)
-                                    ElevatedButton.icon(
-                                      onPressed: () => notifier.updateStep(editorState.activeStep + 1),
-                                      icon: const Icon(Icons.arrow_forward, size: 16, color: Colors.white),
-                                      label: Text(l10n.nextStep, style: const TextStyle(color: Colors.white)),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primaryIndigo,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                    )
-                                  else
-                                    AppButton(
-                                      text: l10n.viewTemplatesFinish,
-                                      icon: Icons.check_circle_outline_rounded,
-                                      onPressed: () => context.push('/template-select'),
-                                    ),
-                                ],
-                              ),
-                            ],
-                          ),
+                      const SizedBox(width: 10),
+                      IconButton(
+                        onPressed: () => context.push('/template-select'),
+                        tooltip: l10n.viewTemplatesFinish,
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.glassBackground,
+                          side: const BorderSide(color: AppColors.glassBorder),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
+                        icon: const Icon(Icons.layers_outlined, size: 18, color: AppColors.textPrimary),
                       ),
                     ],
                   ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _stepChip(0, l10n.headerStep, editorState, notifier),
+                      _stepChip(1, l10n.experienceStep, editorState, notifier),
+                      _stepChip(2, l10n.educationStep, editorState, notifier),
+                      _stepChip(3, l10n.skillsStep, editorState, notifier),
+                      _stepChip(4, l10n.summaryStep, editorState, notifier),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: GlassCard(
+                    borderRadius: 12,
+                    blur: 14,
+                    padding: const EdgeInsets.all(14),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, animation) {
+                        final offset = Tween<Offset>(
+                          begin: const Offset(0.04, 0),
+                          end: Offset.zero,
+                        ).animate(animation);
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(position: offset, child: child),
+                        );
+                      },
+                      child: IndexedStack(
+                        key: ValueKey(editorState.activeStep),
+                        index: editorState.activeStep.clamp(0, 4),
+                        children: [
+                          _HeaderStep(notifier: notifier, header: editorState.resume.header, l10n: l10n, cvTitleController: _cvTitleController, nameController: _nameController, titleController: _titleController, emailController: _emailController, phoneController: _phoneController, locationController: _locationController),
+                          _ExperienceStep(editorState: editorState, notifier: notifier, l10n: l10n),
+                          _EducationStep(editorState: editorState, notifier: notifier, l10n: l10n),
+                          _SkillsStep(editorState: editorState, notifier: notifier, l10n: l10n),
+                          _SummaryStep(editorState: editorState, notifier: notifier, l10n: l10n, summaryController: _summaryController, onGenerate: () {
+                            final currentResume = ref.read(resumeEditorProvider).resume;
+                            final isTurkish = Localizations.localeOf(context).languageCode == 'tr';
+                            final generated = _generateSmartSummary(currentResume, isTurkish);
+                            _summaryController.text = generated;
+                            notifier.updateSummary(generated);
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: editorState.activeStep == 0 ? null : () => notifier.updateStep(editorState.activeStep - 1),
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        label: Text(l10n.previous),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: editorState.activeStep < 4 ? () => notifier.updateStep(editorState.activeStep + 1) : () => context.push('/template-select'),
+                        icon: Icon(editorState.activeStep < 4 ? Icons.arrow_forward_rounded : Icons.check_circle_outline_rounded),
+                        label: Text(editorState.activeStep < 4 ? l10n.nextStep : l10n.viewTemplatesFinish),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -233,129 +270,39 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
     );
   }
 
-  Widget _stepTab(int stepIndex, String title, IconData icon, ResumeEditorState state, ResumeEditorNotifier notifier) {
-    final isActive = state.activeStep == stepIndex;
-    return GestureDetector(
-      onTap: () => notifier.updateStep(stepIndex),
-      child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.primaryIndigo : AppColors.glassBackground,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isActive ? AppColors.primaryIndigo : AppColors.glassBorder,
-          ),
+  Widget _stepChip(int index, String label, ResumeEditorState state, ResumeEditorNotifier notifier) {
+    final active = state.activeStep == index;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        selected: active,
+        onSelected: (_) => notifier.updateStep(index),
+        label: Text(label),
+        labelStyle: TextStyle(color: active ? Colors.white : AppColors.textSecondary, fontWeight: FontWeight.w700, fontSize: 12),
+        selectedColor: AppColors.primaryIndigo,
+        backgroundColor: AppColors.glassBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: active ? AppColors.primaryLight : AppColors.glassBorder),
         ),
-        child: Row(
-          children: [
-            Icon(icon, size: 16, color: isActive ? Colors.white : AppColors.textSecondary),
-            const SizedBox(width: 6),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                color: isActive ? Colors.white : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
+        showCheckmark: false,
       ),
-    );
-  }
-
-  Widget _buildHeaderForm(ResumeEditorNotifier notifier, AppLocalizations l10n) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(l10n.personalInfo, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-          const SizedBox(height: 16),
-          _inputField(l10n.cvTitleLabel, _cvTitleController, (val) {
-            notifier.updateTitle(val);
-          }),
-          _inputField(l10n.fullName, _nameController, (val) {
-            notifier.updateHeader(ref.read(resumeEditorProvider).resume.header.copyWith(fullName: val));
-          }),
-          _inputField(l10n.professionalTitle, _titleController, (val) {
-            notifier.updateHeader(ref.read(resumeEditorProvider).resume.header.copyWith(professionalTitle: val));
-          }),
-          _inputField(l10n.email, _emailController, (val) {
-            notifier.updateHeader(ref.read(resumeEditorProvider).resume.header.copyWith(email: val));
-          }),
-          _inputField(l10n.phone, _phoneController, (val) {
-            notifier.updateHeader(ref.read(resumeEditorProvider).resume.header.copyWith(phone: val));
-          }),
-          _inputField(l10n.location, _locationController, (val) {
-            notifier.updateHeader(ref.read(resumeEditorProvider).resume.header.copyWith(location: val));
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryForm(ResumeEditorNotifier notifier, AppLocalizations l10n) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(l10n.summary, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-            TextButton.icon(
-              onPressed: () {
-                final currentResume = ref.read(resumeEditorProvider).resume;
-                final isTurkish = Localizations.localeOf(context).languageCode == 'tr';
-                final generated = _generateSmartSummary(currentResume, isTurkish);
-                _summaryController.text = generated;
-                notifier.updateSummary(generated);
-              },
-              icon: const Icon(Icons.auto_awesome, size: 14, color: AppColors.accentViolet),
-              label: Text(l10n.enhanceWithAi, style: const TextStyle(fontSize: 12, color: AppColors.accentViolet)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: TextField(
-            controller: _summaryController,
-            maxLines: null,
-            expands: true,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-            decoration: InputDecoration(
-              hintText: l10n.summaryHint,
-              hintStyle: const TextStyle(color: AppColors.textMuted),
-              filled: true,
-              fillColor: Colors.black.withValues(alpha: 0.2),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.glassBorder)),
-            ),
-            onChanged: (val) => notifier.updateSummary(val),
-          ),
-        ),
-      ],
     );
   }
 
   String _generateSmartSummary(ResumeEntity resume, bool isTurkish) {
     final header = resume.header;
-    final title = header.professionalTitle?.trim().isNotEmpty == true
-        ? header.professionalTitle!.trim()
-        : (isTurkish ? 'Yazılım Uzmanı' : 'Software Professional');
-
+    final title = header.professionalTitle?.trim().isNotEmpty == true ? header.professionalTitle!.trim() : (isTurkish ? 'Yazılım Uzmanı' : 'Software Professional');
     final expList = resume.workExperiences;
     final latestExp = expList.isNotEmpty ? expList.first : null;
     final company = latestExp?.company.trim() ?? '';
     final jobTitle = latestExp?.jobTitle.trim() ?? '';
-
     final skillsList = resume.skills.map((s) => s.name.trim()).where((s) => s.isNotEmpty).toList();
     final topSkills = skillsList.take(5).join(', ');
-
     final eduList = resume.educationList;
     final topEdu = eduList.isNotEmpty ? eduList.first : null;
     final degree = topEdu?.degree.trim() ?? '';
     final inst = topEdu?.institution.trim() ?? '';
-
     final projList = resume.projects;
 
     if (isTurkish) {
@@ -369,359 +316,180 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
         buffer.write('$title olarak kariyerine devam eden ');
       }
       buffer.write('bir profesyonelim. ');
-
-      if (topSkills.isNotEmpty) {
-        buffer.write('Özellikle $topSkills konularında derinlemesine bilgi ve yetkinliğe sahibim. ');
-      }
-
-      if (degree.isNotEmpty || inst.isNotEmpty) {
-        final eduStr = [degree, inst].where((s) => s.isNotEmpty).join(' - ');
-        buffer.write('$eduStr eğitimi ile güçlü bir teknik altyapı edindim. ');
-      }
-
+      if (topSkills.isNotEmpty) buffer.write('Özellikle $topSkills konularında derinlemesine bilgi ve yetkinliğe sahibim. ');
+      if (degree.isNotEmpty || inst.isNotEmpty) buffer.write('${[degree, inst].where((s) => s.isNotEmpty).join(' - ')} eğitimi ile güçlü bir teknik altyapı edindim. ');
       if (projList.isNotEmpty) {
         buffer.write('Geliştirdiğim yenilikçi projelerle ölçeklenebilir ve yüksek performanslı çözümler ürettim. ');
       } else {
         buffer.write('Karmaşık problemleri analiz edip kullanıcı odaklı ve sürdürülebilir çözümler sunmaya odaklanıyorum. ');
       }
-
       buffer.write('Takım çalışmasına yatkın, sürekli öğrenmeye açık ve projelere değer katmayı hedefleyen bir yapıya sahibim.');
       return buffer.toString();
-    } else {
-      final buffer = StringBuffer();
-      buffer.write('Results-driven ');
-      if (jobTitle.isNotEmpty && company.isNotEmpty) {
-        buffer.write('$jobTitle with hands-on experience at $company. ');
-      } else if (jobTitle.isNotEmpty) {
-        buffer.write('$jobTitle with a proven track record. ');
-      } else {
-        buffer.write('$title with a solid technical background. ');
-      }
-
-      if (topSkills.isNotEmpty) {
-        buffer.write('Proficient in $topSkills with expertise in building scalable applications. ');
-      }
-
-      if (degree.isNotEmpty || inst.isNotEmpty) {
-        final eduStr = [degree, inst].where((s) => s.isNotEmpty).join(' from ');
-        buffer.write('Holds an academic background in $eduStr. ');
-      }
-
-      if (projList.isNotEmpty) {
-        buffer.write('Demonstrated ability to design and deliver high-impact end-to-end projects. ');
-      } else {
-        buffer.write('Passionate about continuous learning, problem-solving, and team collaboration. ');
-      }
-
-      return buffer.toString();
     }
-  }
 
-  Widget _buildExperienceForm(ResumeEditorState state, ResumeEditorNotifier notifier, AppLocalizations l10n) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final buffer = StringBuffer();
+    buffer.write('Results-driven ');
+    if (jobTitle.isNotEmpty && company.isNotEmpty) {
+      buffer.write('$jobTitle with hands-on experience at $company. ');
+    } else if (jobTitle.isNotEmpty) {
+      buffer.write('$jobTitle with a proven track record. ');
+    } else {
+      buffer.write('$title with a solid technical background. ');
+    }
+    if (topSkills.isNotEmpty) buffer.write('Proficient in $topSkills with expertise in building scalable applications. ');
+    if (degree.isNotEmpty || inst.isNotEmpty) buffer.write('Holds an academic background in ${[degree, inst].where((s) => s.isNotEmpty).join(' from ')}. ');
+    if (projList.isNotEmpty) {
+      buffer.write('Demonstrated ability to design and deliver high-impact end-to-end projects. ');
+    } else {
+      buffer.write('Passionate about continuous learning, problem-solving, and team collaboration. ');
+    }
+    return buffer.toString();
+  }
+}
+
+class _HeaderStep extends StatelessWidget {
+  final ResumeEditorNotifier notifier;
+  final HeaderInfo header;
+  final AppLocalizations l10n;
+  final TextEditingController cvTitleController;
+  final TextEditingController nameController;
+  final TextEditingController titleController;
+  final TextEditingController emailController;
+  final TextEditingController phoneController;
+  final TextEditingController locationController;
+
+  const _HeaderStep({required this.notifier, required this.header, required this.l10n, required this.cvTitleController, required this.nameController, required this.titleController, required this.emailController, required this.phoneController, required this.locationController});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(l10n.workExperience, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-            IconButton(
-              icon: const Icon(Icons.add_circle, color: AppColors.primaryIndigo),
-              onPressed: () {
-                notifier.addWorkExperience(
-                  WorkExperience(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    jobTitle: '',
-                    company: '',
-                    location: '',
-                    bulletPoints: const [],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: ListView.builder(
-            itemCount: state.resume.workExperiences.length,
-            itemBuilder: (context, index) {
-              final exp = state.resume.workExperiences[index];
-              return _WorkExperienceCard(
-                key: ValueKey(exp.id.isNotEmpty ? exp.id : index),
-                experience: exp,
-                l10n: l10n,
-                onUpdate: (updated) => notifier.updateWorkExperience(index, updated),
-                onDelete: () => notifier.removeWorkExperience(index),
-              );
-            },
-          ),
-        ),
+        Text(l10n.personalInfo, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 14),
+        _field(l10n.cvTitleLabel, cvTitleController, (val) => notifier.updateTitle(val)),
+        _field(l10n.fullName, nameController, (val) => notifier.updateHeader(header.copyWith(fullName: val))),
+        _field(l10n.professionalTitle, titleController, (val) => notifier.updateHeader(header.copyWith(professionalTitle: val))),
+        _field(l10n.email, emailController, (val) => notifier.updateHeader(header.copyWith(email: val))),
+        _field(l10n.phone, phoneController, (val) => notifier.updateHeader(header.copyWith(phone: val))),
+        _field(l10n.location, locationController, (val) => notifier.updateHeader(header.copyWith(location: val))),
       ],
     );
   }
 
-  Widget _buildEducationForm(ResumeEditorState state, ResumeEditorNotifier notifier, AppLocalizations l10n) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _field(String label, TextEditingController controller, ValueChanged<String> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        style: const TextStyle(color: AppColors.textPrimary),
+        decoration: InputDecoration(labelText: label),
+      ),
+    );
+  }
+}
+
+class _ExperienceStep extends StatelessWidget {
+  final ResumeEditorState editorState;
+  final ResumeEditorNotifier notifier;
+  final AppLocalizations l10n;
+
+  const _ExperienceStep({required this.editorState, required this.notifier, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(l10n.education, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+            const Text('Experience', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
             IconButton(
-              icon: const Icon(Icons.add_circle, color: AppColors.primaryIndigo),
-              onPressed: () {
-                notifier.addEducation(
-                  Education(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    degree: '',
-                    institution: '',
-                    location: '',
-                  ),
-                );
-              },
+              onPressed: () => notifier.addWorkExperience(WorkExperience(id: DateTime.now().millisecondsSinceEpoch.toString(), jobTitle: '', company: '', location: '', bulletPoints: const [])),
+              icon: const Icon(Icons.add_circle_rounded, color: AppColors.primaryLight),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: ListView.builder(
-            itemCount: state.resume.educationList.length,
-            itemBuilder: (context, index) {
-              final edu = state.resume.educationList[index];
-              return _EducationCard(
-                key: ValueKey(edu.id.isNotEmpty ? edu.id : index),
-                education: edu,
-                l10n: l10n,
-                onUpdate: (updated) => notifier.updateEducation(index, updated),
-                onDelete: () => notifier.removeEducation(index),
-              );
-            },
-          ),
-        ),
+        const SizedBox(height: 8),
+        if (editorState.resume.workExperiences.isEmpty)
+          const Text('Tap + to add your first role.', style: TextStyle(color: AppColors.textSecondary))
+        else
+          ...editorState.resume.workExperiences.asMap().entries.map((entry) => _ExperienceCard(index: entry.key, exp: entry.value, notifier: notifier, l10n: l10n)),
       ],
     );
   }
+}
 
-  Widget _buildSkillsForm(ResumeEditorState state, ResumeEditorNotifier notifier, AppLocalizations l10n) {
-    final skillController = TextEditingController();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(l10n.skillsCompetencies, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: skillController,
-                style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: l10n.skillHint,
-                  hintStyle: const TextStyle(color: AppColors.textMuted),
-                  filled: true,
-                  fillColor: Colors.black.withValues(alpha: 0.2),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.glassBorder)),
+class _ExperienceCard extends StatefulWidget {
+  final int index;
+  final WorkExperience exp;
+  final ResumeEditorNotifier notifier;
+  final AppLocalizations l10n;
+  const _ExperienceCard({required this.index, required this.exp, required this.notifier, required this.l10n});
+  @override
+  State<_ExperienceCard> createState() => _ExperienceCardState();
+}
+
+class _ExperienceCardState extends State<_ExperienceCard> {
+  late final TextEditingController _job;
+  late final TextEditingController _company;
+  late final TextEditingController _location;
+  late final TextEditingController _bullets;
+
+  @override
+  void initState() {
+    super.initState();
+    _job = TextEditingController(text: widget.exp.jobTitle);
+    _company = TextEditingController(text: widget.exp.company);
+    _location = TextEditingController(text: widget.exp.location);
+    _bullets = TextEditingController(text: widget.exp.bulletPoints.join('\n'));
+  }
+
+  @override
+  void dispose() {
+    _job.dispose();
+    _company.dispose();
+    _location.dispose();
+    _bullets.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      borderRadius: 12,
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          _input(widget.l10n.jobTitle, _job),
+          _input(widget.l10n.company, _company),
+          _input(widget.l10n.location, _location),
+          _input(widget.l10n.bulletPointsLabel, _bullets, maxLines: 4),
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => widget.notifier.removeWorkExperience(widget.index),
+                  child: const Text('Delete'),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            AppButton(
-              text: l10n.addSkill,
-              onPressed: () {
-                if (skillController.text.trim().isNotEmpty) {
-                  notifier.addSkill(Skill(name: skillController.text.trim(), id: DateTime.now().millisecondsSinceEpoch.toString()));
-                  skillController.clear();
-                }
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: state.resume.skills.asMap().entries.map((entry) {
-            final idx = entry.key;
-            final skill = entry.value;
-            return Chip(
-              label: Text(skill.name, style: const TextStyle(fontSize: 12, color: AppColors.textPrimary)),
-              backgroundColor: AppColors.glassBackground,
-              side: BorderSide(color: AppColors.glassBorder),
-              deleteIcon: const Icon(Icons.close, size: 14, color: AppColors.textMuted),
-              onDeleted: () => notifier.removeSkill(idx),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProjectsForm(ResumeEditorState state, ResumeEditorNotifier notifier, AppLocalizations l10n) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(l10n.projects, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-            IconButton(
-              icon: const Icon(Icons.add_circle, color: AppColors.primaryIndigo),
-              onPressed: () {
-                notifier.addProject(
-                  Project(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    title: '',
-                    description: '',
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: state.resume.projects.isEmpty
-              ? Center(
-                  child: Text(
-                    l10n.noProjectsYet,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: state.resume.projects.length,
-                  itemBuilder: (context, index) {
-                    final project = state.resume.projects[index];
-                    return _ProjectCard(
-                      key: ValueKey(project.id.isNotEmpty ? project.id : index),
-                      project: project,
-                      l10n: l10n,
-                      onUpdate: (updated) => notifier.updateProject(index, updated),
-                      onDelete: () => notifier.removeProject(index),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    widget.notifier.updateWorkExperience(
+                      widget.index,
+                      widget.exp.copyWith(
+                        jobTitle: _job.text,
+                        company: _company.text,
+                        location: _location.text,
+                        bulletPoints: _bullets.text.split('\n').where((s) => s.trim().isNotEmpty).toList(),
+                      ),
                     );
                   },
-                ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPhotoForm(ResumeEditorState state, ResumeEditorNotifier notifier, AppLocalizations l10n) {
-    final photoBytes = state.photoBytes;
-    final photoPath = state.resume.photoPath;
-    final bool hasPhoto;
-    if (kIsWeb) {
-      hasPhoto = photoBytes != null && photoBytes.isNotEmpty;
-    } else {
-      hasPhoto = (photoBytes != null && photoBytes.isNotEmpty) ||
-          (photoPath != null && photoPath.isNotEmpty && File(photoPath).existsSync());
-    }
-
-    Widget photoWidget;
-    if (hasPhoto) {
-      if (photoBytes != null && photoBytes.isNotEmpty) {
-        photoWidget = Image.memory(
-          photoBytes,
-          fit: BoxFit.cover,
-          width: 130,
-          height: 130,
-        );
-      } else if (!kIsWeb && photoPath != null && photoPath.isNotEmpty) {
-        photoWidget = Image.file(
-          File(photoPath),
-          fit: BoxFit.cover,
-          width: 130,
-          height: 130,
-        );
-      } else {
-        photoWidget = const Icon(
-          Icons.person_rounded,
-          size: 70,
-          color: AppColors.textMuted,
-        );
-      }
-    } else {
-      photoWidget = const Icon(
-        Icons.person_rounded,
-        size: 70,
-        color: AppColors.textMuted,
-      );
-    }
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 12),
-          Text(
-            l10n.profilePhotoOptional,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.photoDisclaimer,
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          Center(
-            child: Container(
-              width: 130,
-              height: 130,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.black.withValues(alpha: 0.3),
-                border: Border.all(color: AppColors.primaryIndigo, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryIndigo.withValues(alpha: 0.3),
-                    blurRadius: 16,
-                  ),
-                ],
-              ),
-              child: ClipOval(child: photoWidget),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () async {
-                  final picker = ImagePicker();
-                  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-                  if (pickedFile != null) {
-                    final bytes = await pickedFile.readAsBytes();
-                    notifier.updatePhotoBytes(bytes);
-                    if (!kIsWeb) {
-                      notifier.updatePhotoPath(pickedFile.path);
-                    }
-                  }
-                },
-                icon: const Icon(Icons.photo_library_rounded, size: 18, color: Colors.white),
-                label: Text(hasPhoto ? l10n.changePhoto : l10n.uploadPhoto, style: const TextStyle(color: Colors.white)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryIndigo,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  child: const Text('Save'),
                 ),
               ),
-              if (hasPhoto) ...[
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    notifier.updatePhotoBytes(null);
-                    notifier.updatePhotoPath(null);
-                  },
-                  icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
-                  label: Text(l10n.removePhoto, style: const TextStyle(color: Colors.redAccent)),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.redAccent),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-              ],
             ],
           ),
         ],
@@ -729,679 +497,139 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
     );
   }
 
-  Widget _inputField(String label, TextEditingController controller, Function(String) onChanged) {
+  Widget _input(String label, TextEditingController controller, {int maxLines = 1}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 4),
-          TextField(
-            controller: controller,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.black.withValues(alpha: 0.2),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.glassBorder)),
-            ),
-            onChanged: onChanged,
-          ),
-        ],
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        decoration: InputDecoration(labelText: label),
       ),
     );
   }
 }
 
-String _formatDateForInput(DateTime? dt) {
-  if (dt == null) return '';
-  return '${dt.month.toString().padLeft(2, '0')}/${dt.year}';
-}
-
-DateTime? _parseDateString(String text) {
-  final str = text.trim();
-  if (str.isEmpty) return null;
-  try {
-    return DateTime.parse(str);
-  } catch (_) {}
-
-  final cleanStr = str.replaceAll(RegExp(r'[/\.\-\s]+'), '/');
-  final parts = cleanStr.split('/');
-
-  if (parts.length == 2) {
-    final p1 = int.tryParse(parts[0].trim());
-    final p2 = int.tryParse(parts[1].trim());
-
-    if (p1 != null && p2 != null) {
-      if (p1 >= 1 && p1 <= 12 && p2 > 1000) {
-        return DateTime(p2, p1);
-      }
-      if (p1 > 1000 && p2 >= 1 && p2 <= 12) {
-        return DateTime(p1, p2);
-      }
-    }
-  } else if (parts.length == 3) {
-    final p1 = int.tryParse(parts[0].trim());
-    final p2 = int.tryParse(parts[1].trim());
-    final p3 = int.tryParse(parts[2].trim());
-    if (p1 != null && p2 != null && p3 != null) {
-      if (p3 > 1000 && p2 >= 1 && p2 <= 12) {
-        return DateTime(p3, p2, p1 > 31 ? 1 : p1);
-      }
-      if (p1 > 1000 && p2 >= 1 && p2 <= 12) {
-        return DateTime(p1, p2, p3 > 31 ? 1 : p3);
-      }
-    }
-  }
-
-  final y = int.tryParse(str);
-  if (y != null && y > 1900 && y < 2100) {
-    return DateTime(y, 1);
-  }
-
-  return null;
-}
-
-/// Editable card for a single Work Experience entry
-class _WorkExperienceCard extends StatefulWidget {
-  final WorkExperience experience;
+class _EducationStep extends StatelessWidget {
+  final ResumeEditorState editorState;
+  final ResumeEditorNotifier notifier;
   final AppLocalizations l10n;
-  final ValueChanged<WorkExperience> onUpdate;
-  final VoidCallback onDelete;
 
-  const _WorkExperienceCard({
-    super.key,
-    required this.experience,
-    required this.l10n,
-    required this.onUpdate,
-    required this.onDelete,
-  });
-
-  @override
-  State<_WorkExperienceCard> createState() => _WorkExperienceCardState();
-}
-
-class _WorkExperienceCardState extends State<_WorkExperienceCard> {
-  late TextEditingController _jobTitleController;
-  late TextEditingController _companyController;
-  late TextEditingController _locationController;
-  late TextEditingController _startDateController;
-  late TextEditingController _endDateController;
-  late TextEditingController _bulletPointsController;
-  late bool _isCurrent;
-  bool _isExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _jobTitleController = TextEditingController(text: widget.experience.jobTitle);
-    _companyController = TextEditingController(text: widget.experience.company);
-    _locationController = TextEditingController(text: widget.experience.location);
-    _startDateController = TextEditingController(text: _formatDateForInput(widget.experience.startDate));
-    _endDateController = TextEditingController(text: _formatDateForInput(widget.experience.endDate));
-    _isCurrent = widget.experience.isCurrent;
-    _bulletPointsController = TextEditingController(
-      text: widget.experience.bulletPoints.join('\n'),
-    );
-    if (widget.experience.jobTitle.isEmpty && widget.experience.company.isEmpty) {
-      _isExpanded = true;
-    }
-  }
-
-  @override
-  void dispose() {
-    _jobTitleController.dispose();
-    _companyController.dispose();
-    _locationController.dispose();
-    _startDateController.dispose();
-    _endDateController.dispose();
-    _bulletPointsController.dispose();
-    super.dispose();
-  }
-
-  void _emitUpdate() {
-    final bulletPoints = _bulletPointsController.text
-        .split('\n')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
-    widget.onUpdate(widget.experience.copyWith(
-      jobTitle: _jobTitleController.text,
-      company: _companyController.text,
-      location: _locationController.text,
-      startDate: _parseDateString(_startDateController.text),
-      endDate: _isCurrent ? null : _parseDateString(_endDateController.text),
-      isCurrent: _isCurrent,
-      bulletPoints: bulletPoints,
-    ));
-  }
+  const _EducationStep({required this.editorState, required this.notifier, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
-    final hasContent = _jobTitleController.text.isNotEmpty || _companyController.text.isNotEmpty;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.glassBorder),
-      ),
-      child: Column(
-        children: [
-          // Header row — tap to expand/collapse
-          InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Icon(
-                    _isExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          hasContent ? _jobTitleController.text : widget.l10n.newExperience,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: hasContent ? AppColors.textPrimary : AppColors.textMuted,
-                          ),
-                        ),
-                        if (_companyController.text.isNotEmpty || _locationController.text.isNotEmpty)
-                          Text(
-                            [_companyController.text, _locationController.text]
-                                .where((s) => s.isNotEmpty)
-                                .join(' • '),
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                          ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
-                    onPressed: widget.onDelete,
-                  ),
-                ],
-              ),
+    return ListView(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Education', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+            IconButton(
+              onPressed: () => notifier.addEducation(Education(id: DateTime.now().millisecondsSinceEpoch.toString(), degree: '', institution: '', location: '', startDate: DateTime.now(), endDate: null, isCurrent: false)),
+              icon: const Icon(Icons.add_circle_rounded, color: AppColors.primaryLight),
             ),
-          ),
-          // Editable fields
-          if (_isExpanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: Column(
-                children: [
-                  _cardField(widget.l10n.jobTitle, _jobTitleController, widget.l10n.jobTitleHint),
-                  _cardField(widget.l10n.company, _companyController, widget.l10n.companyHint),
-                  _cardField(widget.l10n.location, _locationController, widget.l10n.locationHint),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _cardField(widget.l10n.startDate, _startDateController, '01/2022'),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _cardField(
-                          widget.l10n.endDate,
-                          _endDateController,
-                          _isCurrent ? widget.l10n.currentlyWorkHere : '12/2023',
-                          enabled: !_isCurrent,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _isCurrent,
-                        activeColor: AppColors.primaryIndigo,
-                        onChanged: (val) {
-                          setState(() {
-                            _isCurrent = val ?? false;
-                          });
-                          _emitUpdate();
-                        },
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isCurrent = !_isCurrent;
-                          });
-                          _emitUpdate();
-                        },
-                        child: Text(
-                          widget.l10n.currentlyWorkHere,
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  TextField(
-                    controller: _bulletPointsController,
-                    maxLines: 3,
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-                    decoration: InputDecoration(
-                      labelText: widget.l10n.bulletPointsLabel,
-                      labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                      hintText: widget.l10n.bulletPointsHint,
-                      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                      filled: true,
-                      fillColor: Colors.black.withValues(alpha: 0.15),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.glassBorder)),
-                    ),
-                    onChanged: (_) => _emitUpdate(),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _cardField(String label, TextEditingController controller, String hint, {bool enabled = true}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: TextField(
-        controller: controller,
-        enabled: enabled,
-        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-          hintText: hint,
-          hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-          filled: true,
-          fillColor: enabled ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.05),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.glassBorder)),
+          ],
         ),
-        onChanged: (_) => _emitUpdate(),
-      ),
+        if (editorState.resume.educationList.isEmpty)
+          const Text('Tap + to add education.', style: TextStyle(color: AppColors.textSecondary))
+        else
+          ...editorState.resume.educationList.asMap().entries.map((entry) => _EducationCardRow(index: entry.key, education: entry.value, notifier: notifier, l10n: l10n)),
+      ],
     );
   }
 }
 
-/// Editable card for a single Education entry
-class _EducationCard extends StatefulWidget {
+class _EducationCardRow extends StatelessWidget {
+  final int index;
   final Education education;
+  final ResumeEditorNotifier notifier;
   final AppLocalizations l10n;
-  final ValueChanged<Education> onUpdate;
-  final VoidCallback onDelete;
-
-  const _EducationCard({
-    super.key,
-    required this.education,
-    required this.l10n,
-    required this.onUpdate,
-    required this.onDelete,
-  });
-
-  @override
-  State<_EducationCard> createState() => _EducationCardState();
-}
-
-class _EducationCardState extends State<_EducationCard> {
-  late TextEditingController _degreeController;
-  late TextEditingController _institutionController;
-  late TextEditingController _locationController;
-  late TextEditingController _gpaController;
-  late TextEditingController _startDateController;
-  late TextEditingController _endDateController;
-  late bool _isCurrent;
-  bool _isExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _degreeController = TextEditingController(text: widget.education.degree);
-    _institutionController = TextEditingController(text: widget.education.institution);
-    _locationController = TextEditingController(text: widget.education.location);
-    _gpaController = TextEditingController(text: widget.education.gpa ?? '');
-    _startDateController = TextEditingController(text: _formatDateForInput(widget.education.startDate));
-    _endDateController = TextEditingController(text: _formatDateForInput(widget.education.endDate));
-    _isCurrent = widget.education.isCurrent;
-    if (widget.education.degree.isEmpty && widget.education.institution.isEmpty) {
-      _isExpanded = true;
-    }
-  }
-
-  @override
-  void dispose() {
-    _degreeController.dispose();
-    _institutionController.dispose();
-    _locationController.dispose();
-    _gpaController.dispose();
-    _startDateController.dispose();
-    _endDateController.dispose();
-    super.dispose();
-  }
-
-  void _emitUpdate() {
-    widget.onUpdate(widget.education.copyWith(
-      degree: _degreeController.text,
-      institution: _institutionController.text,
-      location: _locationController.text,
-      gpa: _gpaController.text.isEmpty ? null : _gpaController.text,
-      startDate: _parseDateString(_startDateController.text),
-      endDate: _isCurrent ? null : _parseDateString(_endDateController.text),
-      isCurrent: _isCurrent,
-    ));
-  }
-
+  const _EducationCardRow({required this.index, required this.education, required this.notifier, required this.l10n});
   @override
   Widget build(BuildContext context) {
-    final hasContent = _degreeController.text.isNotEmpty || _institutionController.text.isNotEmpty;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.glassBorder),
-      ),
+    final degree = TextEditingController(text: education.degree);
+    final institution = TextEditingController(text: education.institution);
+    return GlassCard(
+      margin: const EdgeInsets.only(top: 12),
+      borderRadius: 12,
+      padding: const EdgeInsets.all(12),
       child: Column(
         children: [
-          // Header row — tap to expand/collapse
-          InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Icon(
-                    _isExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          hasContent ? _degreeController.text : widget.l10n.newEducation,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: hasContent ? AppColors.textPrimary : AppColors.textMuted,
-                          ),
-                        ),
-                        if (_institutionController.text.isNotEmpty)
-                          Text(
-                            _institutionController.text,
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                          ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
-                    onPressed: widget.onDelete,
-                  ),
-                ],
-              ),
-            ),
+          TextField(controller: degree, decoration: InputDecoration(labelText: l10n.degree)),
+          const SizedBox(height: 10),
+          TextField(controller: institution, decoration: InputDecoration(labelText: l10n.institution)),
+          Row(
+            children: [
+              Expanded(child: TextButton(onPressed: () => notifier.removeEducation(index), child: const Text('Delete'))),
+              Expanded(child: ElevatedButton(onPressed: () => notifier.updateEducation(index, education.copyWith(degree: degree.text, institution: institution.text)), child: const Text('Save'))),
+            ],
           ),
-          // Editable fields
-          if (_isExpanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: Column(
-                children: [
-                  _cardField(widget.l10n.degree, _degreeController, widget.l10n.degreeHint),
-                  _cardField(widget.l10n.institution, _institutionController, widget.l10n.institutionHint),
-                  _cardField(widget.l10n.location, _locationController, widget.l10n.locationHint),
-                  _cardField(widget.l10n.gpaOptional, _gpaController, widget.l10n.gpaHint),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _cardField(widget.l10n.startDate, _startDateController, '09/2018'),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _cardField(
-                          widget.l10n.endDate,
-                          _endDateController,
-                          _isCurrent ? widget.l10n.currentlyStudyHere : '06/2022',
-                          enabled: !_isCurrent,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _isCurrent,
-                        activeColor: AppColors.primaryIndigo,
-                        onChanged: (val) {
-                          setState(() {
-                            _isCurrent = val ?? false;
-                          });
-                          _emitUpdate();
-                        },
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isCurrent = !_isCurrent;
-                          });
-                          _emitUpdate();
-                        },
-                        child: Text(
-                          widget.l10n.currentlyStudyHere,
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );
   }
-
-  Widget _cardField(String label, TextEditingController controller, String hint, {bool enabled = true}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: TextField(
-        controller: controller,
-        enabled: enabled,
-        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-          hintText: hint,
-          hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-          filled: true,
-          fillColor: enabled ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.05),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.glassBorder)),
-        ),
-        onChanged: (_) => _emitUpdate(),
-      ),
-    );
-  }
 }
 
-/// Editable card for a single Project entry
-class _ProjectCard extends StatefulWidget {
-  final Project project;
+class _SkillsStep extends StatelessWidget {
+  final ResumeEditorState editorState;
+  final ResumeEditorNotifier notifier;
   final AppLocalizations l10n;
-  final ValueChanged<Project> onUpdate;
-  final VoidCallback onDelete;
-
-  const _ProjectCard({
-    super.key,
-    required this.project,
-    required this.l10n,
-    required this.onUpdate,
-    required this.onDelete,
-  });
-
-  @override
-  State<_ProjectCard> createState() => _ProjectCardState();
-}
-
-class _ProjectCardState extends State<_ProjectCard> {
-  late TextEditingController _titleController;
-  late TextEditingController _descriptionController;
-  late TextEditingController _urlController;
-  late TextEditingController _techController;
-  bool _isExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _titleController = TextEditingController(text: widget.project.title);
-    _descriptionController = TextEditingController(text: widget.project.description);
-    _urlController = TextEditingController(text: widget.project.url ?? '');
-    _techController = TextEditingController(text: widget.project.technologies.join(', '));
-
-    if (widget.project.title.isEmpty) {
-      _isExpanded = true;
-    }
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _urlController.dispose();
-    _techController.dispose();
-    super.dispose();
-  }
-
-  void _emitUpdate() {
-    final techs = _techController.text
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
-
-    widget.onUpdate(widget.project.copyWith(
-      title: _titleController.text,
-      description: _descriptionController.text,
-      url: _urlController.text.isEmpty ? null : _urlController.text,
-      technologies: techs,
-    ));
-  }
+  const _SkillsStep({required this.editorState, required this.notifier, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
-    final hasContent = _titleController.text.isNotEmpty;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.glassBorder),
-      ),
-      child: Column(
-        children: [
-          // Header row — tap to expand/collapse
-          InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Icon(
-                    _isExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          hasContent ? _titleController.text : widget.l10n.newProject,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: hasContent ? AppColors.textPrimary : AppColors.textMuted,
-                          ),
-                        ),
-                        if (_techController.text.isNotEmpty)
-                          Text(
-                            _techController.text,
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                          ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
-                    onPressed: widget.onDelete,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Editable fields
-          if (_isExpanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: Column(
-                children: [
-                  _cardField(widget.l10n.projectTitle, _titleController, widget.l10n.projectTitleHint),
-                  _cardField(widget.l10n.projectUrl, _urlController, widget.l10n.projectUrlHint),
-                  _cardField(widget.l10n.technologiesUsed, _techController, widget.l10n.technologiesHint),
-                  const SizedBox(height: 4),
-                  TextField(
-                    controller: _descriptionController,
-                    maxLines: 3,
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-                    decoration: InputDecoration(
-                      labelText: widget.l10n.projectDescription,
-                      labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                      hintText: widget.l10n.projectDescHint,
-                      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                      filled: true,
-                      fillColor: Colors.black.withValues(alpha: 0.15),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.glassBorder)),
-                    ),
-                    onChanged: (_) => _emitUpdate(),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
+    final skillController = TextEditingController();
+    return ListView(
+      children: [
+        const Text('Skills', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 12),
+        TextField(controller: skillController, decoration: const InputDecoration(labelText: 'Skill')),
+        const SizedBox(height: 10),
+        ElevatedButton.icon(
+          onPressed: () {
+            final text = skillController.text.trim();
+            if (text.isNotEmpty) notifier.addSkill(Skill(id: DateTime.now().millisecondsSinceEpoch.toString(), name: text, level: 'Intermediate'));
+          },
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Add skill'),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: editorState.resume.skills.map((skill) => Chip(label: Text(skill.name))).toList(),
+        ),
+      ],
     );
   }
+}
 
-  Widget _cardField(String label, TextEditingController controller, String hint) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: TextField(
-        controller: controller,
-        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-          hintText: hint,
-          hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-          filled: true,
-          fillColor: Colors.black.withValues(alpha: 0.15),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.glassBorder)),
+class _SummaryStep extends StatelessWidget {
+  final ResumeEditorState editorState;
+  final ResumeEditorNotifier notifier;
+  final AppLocalizations l10n;
+  final TextEditingController summaryController;
+  final VoidCallback onGenerate;
+  const _SummaryStep({required this.editorState, required this.notifier, required this.l10n, required this.summaryController, required this.onGenerate});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Summary', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+            TextButton.icon(onPressed: onGenerate, icon: const Icon(Icons.auto_awesome, size: 16), label: Text(l10n.enhanceWithAi)),
+          ],
         ),
-        onChanged: (_) => _emitUpdate(),
-      ),
+        TextField(
+          controller: summaryController,
+          maxLines: 10,
+          decoration: InputDecoration(labelText: l10n.summaryHint),
+          onChanged: notifier.updateSummary,
+        ),
+      ],
     );
   }
 }

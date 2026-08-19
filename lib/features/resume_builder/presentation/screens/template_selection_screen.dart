@@ -4,13 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/locale_provider.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/widgets/glass_card.dart';
 import '../../../pdf_export/pdf_exporter.dart';
 import '../../../template_engine/domain/entities/template_config.dart';
 import '../../../template_engine/template_registry.dart';
 import '../providers/resume_provider.dart';
 
-/// Screen allowing users to select a globally standardized resume template
-/// populated with their actual CV data, and trigger PDF export.
 class TemplateSelectionScreen extends ConsumerWidget {
   const TemplateSelectionScreen({super.key});
 
@@ -28,81 +27,95 @@ class TemplateSelectionScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.darkBackgroundGradient,
-        ),
+      body: DecoratedBox(
+        decoration: const BoxDecoration(gradient: AppColors.darkBackgroundGradient),
         child: SafeArea(
           child: Column(
             children: [
-              // Top Bar
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.glassBackground,
-                  border: Border(bottom: BorderSide(color: AppColors.glassBorder)),
-                ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
                       onPressed: () => context.pop(),
+                      icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
                     ),
-                    const SizedBox(width: 4),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.selectDesign,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          l10n.standardizedTemplates,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l10n.selectDesign, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                          Text(l10n.standardizedTemplates, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.glassBackground,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: AppColors.glassBorder),
+                      ),
+                      child: Text(selectedTemplate.config.isPremium ? 'PRO' : 'FREE', style: const TextStyle(color: AppColors.textPrimary, fontSize: 11, fontWeight: FontWeight.w700)),
                     ),
                   ],
                 ),
               ),
-
-              // Template Grid Gallery
-              Expanded(
-                child: Padding(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GlassCard(
+                  borderRadius: 22,
+                  blur: 16,
                   padding: const EdgeInsets.all(16),
-                  child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 320,
-                      mainAxisExtent: 380,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    itemCount: templates.length,
-                    itemBuilder: (context, index) {
-                      final template = templates[index];
-                      final isSelected = template.config.id == selectedTemplateId;
-
-                      return _TemplateCard(
-                        template: template,
-                        isSelected: isSelected,
-                        resumeData: resumeData,
-                        onSelect: () => notifier.setTemplateId(template.config.id),
-                      );
-                    },
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Soft Glass Mobile', style: TextStyle(color: AppColors.textPrimary, fontSize: 22, fontWeight: FontWeight.w800, height: 1.05)),
+                            const SizedBox(height: 8),
+                            Text(l10n.selectDesign, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        width: 76,
+                        height: 76,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 2),
+                        ),
+                        child: Center(
+                          child: Text('${selectedTemplate.config.isPremium ? 1 : 0}', style: const TextStyle(color: AppColors.primaryLight, fontWeight: FontWeight.w800, fontSize: 22)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-
-              // Bottom Export Action Bar
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  itemCount: templates.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final template = templates[index];
+                    final isSelected = template.config.id == selectedTemplateId;
+                    return _TemplateTile(
+                      template: template,
+                      isSelected: isSelected,
+                      resumeData: resumeData,
+                      onSelect: () => notifier.setTemplateId(template.config.id),
+                    );
+                  },
+                ),
+              ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 decoration: BoxDecoration(
                   color: AppColors.glassBackground,
                   border: Border(top: BorderSide(color: AppColors.glassBorder)),
@@ -113,115 +126,43 @@ class TemplateSelectionScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          l10n.selectedDesign,
-                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              selectedTemplate.config.name,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            if (selectedTemplate.config.isPremium) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accentViolet.withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Text(
-                                  'PRO',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    color: AppColors.accentViolet,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
+                        const Text('Selected', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                        Text(selectedTemplate.config.name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        // Button 1: PDF İndir & Kaydet
                         Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () async {
+                          child: OutlinedButton(
+                            onPressed: () {
                               final isPro = ref.read(isProUserProvider);
-                              final result = notifier.saveCurrentResume(
-                                ref.read(savedResumesProvider.notifier),
-                                isPro: isPro,
-                              );
+                              final result = notifier.saveCurrentResume(ref.read(savedResumesProvider.notifier), isPro: isPro);
                               if (result == SaveResult.proRequired) {
-                                if (context.mounted) _showProPaywall(context, l10n);
+                                _showProPaywall(context, l10n);
                                 return;
                               }
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(l10n.cvSavedDownloading)),
-                                );
-                              }
-                              await PdfExporter.savePdf(
-                                template: selectedTemplate,
-                                resumeData: resumeData,
-                                context: context,
-                              );
-                              if (context.mounted) {
-                                context.go('/');
-                              }
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.cvSavedSuccess)));
+                              context.go('/');
                             },
-                            icon: const Icon(Icons.picture_as_pdf_rounded, size: 16, color: Colors.white),
-                            label: Text(
-                              l10n.saveAndPdf,
-                              style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryIndigo,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
+                            child: Text(l10n.saveOnly),
                           ),
                         ),
                         const SizedBox(width: 10),
-                        // Button 2: Sadece Kaydet
                         Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
+                          child: ElevatedButton(
+                            onPressed: () async {
                               final isPro = ref.read(isProUserProvider);
-                              final result = notifier.saveCurrentResume(
-                                ref.read(savedResumesProvider.notifier),
-                                isPro: isPro,
-                              );
+                              final result = notifier.saveCurrentResume(ref.read(savedResumesProvider.notifier), isPro: isPro);
                               if (result == SaveResult.proRequired) {
-                                if (context.mounted) _showProPaywall(context, l10n);
+                                _showProPaywall(context, l10n);
                                 return;
                               }
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(l10n.cvSavedSuccess)),
-                                );
-                                context.go('/');
-                              }
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.cvSavedDownloading)));
+                              await PdfExporter.savePdf(template: selectedTemplate, resumeData: resumeData, context: context);
+                              if (context.mounted) context.go('/');
                             },
-                            icon: const Icon(Icons.save_rounded, size: 16, color: AppColors.textPrimary),
-                            label: Text(
-                              l10n.saveOnly,
-                              style: const TextStyle(fontSize: 12, color: AppColors.textPrimary, fontWeight: FontWeight.bold),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              side: BorderSide(color: AppColors.glassBorder),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
+                            child: Text(l10n.saveAndPdf),
                           ),
                         ),
                       ],
@@ -239,230 +180,74 @@ class TemplateSelectionScreen extends ConsumerWidget {
   void _showProPaywall(BuildContext context, AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.accentViolet.withValues(alpha: 0.4)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accentViolet.withValues(alpha: 0.25),
-                blurRadius: 30,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.accentViolet.withValues(alpha: 0.5),
-                      blurRadius: 16,
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 28),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.proRequired,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                l10n.proRequiredMessage,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accentViolet,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: Text(
-                    l10n.upgradeToPro,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(
-                  l10n.maybeLater,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.white.withValues(alpha: 0.5),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.darkSurface,
+        title: Text(l10n.proRequired, style: const TextStyle(color: AppColors.textPrimary)),
+        content: Text(l10n.proRequiredMessage, style: const TextStyle(color: AppColors.textSecondary)),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10n.maybeLater)),
+          ElevatedButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10n.upgradeToPro)),
+        ],
       ),
     );
   }
 }
 
-class _TemplateCard extends StatelessWidget {
+class _TemplateTile extends StatelessWidget {
   final BaseResumeTemplate template;
   final bool isSelected;
   final Map<String, dynamic> resumeData;
   final VoidCallback onSelect;
 
-  const _TemplateCard({
-    required this.template,
-    required this.isSelected,
-    required this.resumeData,
-    required this.onSelect,
-  });
+  const _TemplateTile({required this.template, required this.isSelected, required this.resumeData, required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
     final config = template.config;
-
     return GestureDetector(
       onTap: onSelect,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 180),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? AppColors.primaryIndigo : Colors.grey.shade300,
-            width: isSelected ? 2.5 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected
-                  ? AppColors.primaryIndigo.withValues(alpha: 0.25)
-                  : Colors.black.withValues(alpha: 0.06),
-              blurRadius: isSelected ? 16 : 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: AppColors.glassBackground,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? AppColors.primaryLight : AppColors.glassBorder, width: isSelected ? 1.4 : 1),
         ),
+        padding: const EdgeInsets.all(12),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Card Header Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    config.name,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? AppColors.primaryIndigo : Colors.black87,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      if (config.isPremium)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          margin: const EdgeInsets.only(right: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.accentViolet.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            'PRO',
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: AppColors.accentViolet,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          margin: const EdgeInsets.only(right: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            'FREE',
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: Colors.green,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      if (isSelected)
-                        const Icon(
-                          Icons.check_circle_rounded,
-                          color: AppColors.primaryIndigo,
-                          size: 18,
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Real Data Resume Preview
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade200),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(config.name, style: TextStyle(color: isSelected ? AppColors.textPrimary : AppColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: AspectRatio(
-                      aspectRatio: 1 / 1.414,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.topCenter,
-                        child: SizedBox(
-                          width: 400,
-                          height: 565,
-                          child: template.buildPreview(resumeData),
-                        ),
-                      ),
+                if (config.isPremium)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
+                    child: const Text('PRO', style: TextStyle(color: AppColors.primaryLight, fontSize: 9, fontWeight: FontWeight.w800)),
+                  ),
+                if (isSelected) ...[
+                  const SizedBox(width: 8),
+                  const Icon(Icons.check_circle_rounded, color: AppColors.primaryLight, size: 18),
+                ],
+              ],
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                color: Colors.white,
+                child: AspectRatio(
+                  aspectRatio: 1 / 1.38,
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: 380,
+                      height: 540,
+                      child: template.buildPreview(resumeData),
                     ),
                   ),
                 ),
