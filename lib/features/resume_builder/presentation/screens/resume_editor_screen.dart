@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ai_cv_builder/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/soft_glass_shell.dart';
@@ -18,6 +19,7 @@ class ResumeEditorScreen extends ConsumerStatefulWidget {
 }
 
 class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
+  static const _totalSteps = 7;
   late final TextEditingController _cvTitleController;
   late final TextEditingController _nameController;
   late final TextEditingController _titleController;
@@ -114,7 +116,14 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(color: AppColors.glassBackground, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.glassBorder)),
-                      child: Text('Step ${editorState.activeStep + 1}/5', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 11)),
+                      child: Text(
+                        l10n.stepProgress(editorState.activeStep + 1, _totalSteps),
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -153,7 +162,7 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(2),
                               child: LinearProgressIndicator(
-                                value: (editorState.activeStep + 1) / 5,
+                                value: (editorState.activeStep + 1) / _totalSteps,
                                 minHeight: 4,
                                 backgroundColor: Colors.white.withValues(alpha: 0.1),
                                 valueColor: const AlwaysStoppedAnimation(AppColors.cyan),
@@ -161,7 +170,7 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                             ),
                             const SizedBox(height: 5),
                             Text(
-                              l10n.stepProgress(editorState.activeStep + 1, 5),
+                              l10n.stepProgress(editorState.activeStep + 1, _totalSteps),
                               style: const TextStyle(color: AppColors.textSecondary, fontSize: 9),
                             ),
                           ],
@@ -193,7 +202,9 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                       _stepChip(1, l10n.experienceStep, editorState, notifier),
                       _stepChip(2, l10n.educationStep, editorState, notifier),
                       _stepChip(3, l10n.skillsStep, editorState, notifier),
-                      _stepChip(4, l10n.summaryStep, editorState, notifier),
+                      _stepChip(4, l10n.projectsStep, editorState, notifier),
+                      _stepChip(5, l10n.photoStep, editorState, notifier),
+                      _stepChip(6, l10n.summaryStep, editorState, notifier),
                     ],
                   ),
                 ),
@@ -222,12 +233,14 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                       },
                       child: IndexedStack(
                         key: ValueKey(editorState.activeStep),
-                        index: editorState.activeStep.clamp(0, 4),
+                        index: editorState.activeStep.clamp(0, _totalSteps - 1),
                         children: [
                           _HeaderStep(notifier: notifier, header: editorState.resume.header, l10n: l10n, cvTitleController: _cvTitleController, nameController: _nameController, titleController: _titleController, emailController: _emailController, phoneController: _phoneController, locationController: _locationController),
                           _ExperienceStep(editorState: editorState, notifier: notifier, l10n: l10n),
                           _EducationStep(editorState: editorState, notifier: notifier, l10n: l10n),
                           _SkillsStep(editorState: editorState, notifier: notifier, l10n: l10n),
+                          _ProjectsStep(editorState: editorState, notifier: notifier, l10n: l10n),
+                          _PhotoStep(editorState: editorState, notifier: notifier, l10n: l10n),
                           _SummaryStep(editorState: editorState, notifier: notifier, l10n: l10n, summaryController: _summaryController, onGenerate: () {
                             final currentResume = ref.read(resumeEditorProvider).resume;
                             final isTurkish = Localizations.localeOf(context).languageCode == 'tr';
@@ -255,9 +268,19 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: editorState.activeStep < 4 ? () => notifier.updateStep(editorState.activeStep + 1) : () => context.push('/template-select'),
-                        icon: Icon(editorState.activeStep < 4 ? Icons.arrow_forward_rounded : Icons.check_circle_outline_rounded),
-                        label: Text(editorState.activeStep < 4 ? l10n.nextStep : l10n.viewTemplatesFinish),
+                        onPressed: editorState.activeStep < _totalSteps - 1
+                            ? () => notifier.updateStep(editorState.activeStep + 1)
+                            : () => context.push('/template-select'),
+                        icon: Icon(
+                          editorState.activeStep < _totalSteps - 1
+                              ? Icons.arrow_forward_rounded
+                              : Icons.check_circle_outline_rounded,
+                        ),
+                        label: Text(
+                          editorState.activeStep < _totalSteps - 1
+                              ? l10n.nextStep
+                              : l10n.viewTemplatesFinish,
+                        ),
                       ),
                     ),
                   ],
@@ -601,6 +624,269 @@ class _SkillsStep extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _ProjectsStep extends StatelessWidget {
+  final ResumeEditorState editorState;
+  final ResumeEditorNotifier notifier;
+  final AppLocalizations l10n;
+
+  const _ProjectsStep({
+    required this.editorState,
+    required this.notifier,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              l10n.projects,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            IconButton(
+              onPressed: () => notifier.addProject(
+                Project(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  title: '',
+                  description: '',
+                ),
+              ),
+              icon: const Icon(
+                Icons.add_circle_rounded,
+                color: AppColors.primaryLight,
+              ),
+              tooltip: l10n.addProject,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (editorState.resume.projects.isEmpty)
+          Text(
+            l10n.noProjectsYet,
+            style: const TextStyle(color: AppColors.textSecondary),
+          )
+        else
+          ...editorState.resume.projects.asMap().entries.map(
+                (entry) => _ProjectCard(
+                  key: ValueKey(entry.value.id),
+                  index: entry.key,
+                  project: entry.value,
+                  notifier: notifier,
+                  l10n: l10n,
+                ),
+              ),
+      ],
+    );
+  }
+}
+
+class _ProjectCard extends StatefulWidget {
+  final int index;
+  final Project project;
+  final ResumeEditorNotifier notifier;
+  final AppLocalizations l10n;
+
+  const _ProjectCard({
+    super.key,
+    required this.index,
+    required this.project,
+    required this.notifier,
+    required this.l10n,
+  });
+
+  @override
+  State<_ProjectCard> createState() => _ProjectCardState();
+}
+
+class _ProjectCardState extends State<_ProjectCard> {
+  late final TextEditingController _titleController;
+  late final TextEditingController _urlController;
+  late final TextEditingController _technologiesController;
+  late final TextEditingController _descriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.project.title);
+    _urlController = TextEditingController(text: widget.project.url ?? '');
+    _technologiesController =
+        TextEditingController(text: widget.project.technologies.join(', '));
+    _descriptionController = TextEditingController(text: widget.project.description);
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _urlController.dispose();
+    _technologiesController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      margin: const EdgeInsets.only(top: 12),
+      borderRadius: 12,
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          _input(widget.l10n.projectTitle, _titleController),
+          _input(widget.l10n.projectUrl, _urlController),
+          _input(widget.l10n.technologiesUsed, _technologiesController),
+          _input(
+            widget.l10n.projectDescription,
+            _descriptionController,
+            maxLines: 4,
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => widget.notifier.removeProject(widget.index),
+                  child: const Text('Delete'),
+                ),
+              ),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _saveProject,
+                  child: const Text('Save'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _saveProject() {
+    final url = _urlController.text.trim();
+    widget.notifier.updateProject(
+      widget.index,
+      widget.project.copyWith(
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        url: url.isEmpty ? null : url,
+        technologies: _technologiesController.text
+            .split(',')
+            .map((technology) => technology.trim())
+            .where((technology) => technology.isNotEmpty)
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _input(
+    String label,
+    TextEditingController controller, {
+    int maxLines = 1,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        decoration: InputDecoration(labelText: label),
+      ),
+    );
+  }
+}
+
+class _PhotoStep extends StatelessWidget {
+  final ResumeEditorState editorState;
+  final ResumeEditorNotifier notifier;
+  final AppLocalizations l10n;
+
+  const _PhotoStep({
+    required this.editorState,
+    required this.notifier,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPhoto = editorState.photoBytes != null;
+
+    return ListView(
+      children: [
+        Text(
+          l10n.profilePhotoOptional,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.photoDisclaimer,
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 24),
+        Center(
+          child: Container(
+            width: 132,
+            height: 132,
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.primaryLight, width: 1.5),
+              color: AppColors.glassBackground,
+            ),
+            child: ClipOval(
+              child: hasPhoto
+                  ? Image.memory(editorState.photoBytes!, fit: BoxFit.cover)
+                  : const ColoredBox(
+                      color: AppColors.glassBackgroundStrong,
+                      child: Icon(
+                        Icons.person_outline_rounded,
+                        color: AppColors.textSecondary,
+                        size: 48,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        ElevatedButton.icon(
+          onPressed: () => _pickPhoto(),
+          icon: Icon(
+            hasPhoto ? Icons.photo_camera_outlined : Icons.upload_rounded,
+          ),
+          label: Text(hasPhoto ? l10n.changePhoto : l10n.uploadPhoto),
+        ),
+        if (hasPhoto) ...[
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () => notifier.updatePhotoBytes(null),
+            icon: const Icon(Icons.delete_outline_rounded),
+            label: Text(l10n.removePhoto),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _pickPhoto() async {
+    final image = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1200,
+    );
+    if (image == null) return;
+
+    notifier.updatePhotoBytes(await image.readAsBytes());
   }
 }
 
