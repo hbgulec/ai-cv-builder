@@ -47,11 +47,16 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
           ref.read(resumeEditorProvider.notifier).loadResume(loadedResume);
         });
         _cvTitleController = TextEditingController(text: loadedResume.title);
-        _nameController = TextEditingController(text: loadedResume.header.fullName);
-        _titleController = TextEditingController(text: loadedResume.header.professionalTitle ?? '');
-        _emailController = TextEditingController(text: loadedResume.header.email ?? '');
-        _phoneController = TextEditingController(text: loadedResume.header.phone ?? '');
-        _locationController = TextEditingController(text: loadedResume.header.location ?? '');
+        _nameController =
+            TextEditingController(text: loadedResume.header.fullName);
+        _titleController = TextEditingController(
+            text: loadedResume.header.professionalTitle ?? '');
+        _emailController =
+            TextEditingController(text: loadedResume.header.email ?? '');
+        _phoneController =
+            TextEditingController(text: loadedResume.header.phone ?? '');
+        _locationController =
+            TextEditingController(text: loadedResume.header.location ?? '');
         _summaryController = TextEditingController(text: loadedResume.summary);
         return;
       }
@@ -97,27 +102,43 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
                 child: Row(
                   children: [
-                    IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary)),
+                    IconButton(
+                        onPressed: () => context.pop(),
+                        icon: const Icon(Icons.arrow_back_rounded,
+                            color: AppColors.textPrimary)),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            editorState.resume.title.isNotEmpty ? editorState.resume.title : l10n.personalInfo,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                            editorState.resume.title.isNotEmpty
+                                ? editorState.resume.title
+                                : l10n.personalInfo,
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Text(l10n.autoSavedLocally, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          Text(l10n.autoSavedLocally,
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary)),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(color: AppColors.glassBackground, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.glassBorder)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                          color: AppColors.glassBackground,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.glassBorder)),
                       child: Text(
-                        l10n.stepProgress(editorState.activeStep + 1, _totalSteps),
+                        l10n.stepProgress(
+                            editorState.activeStep + 1, _totalSteps),
                         style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w700,
@@ -146,7 +167,10 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                         ),
                         child: Text(
                           '${editorState.resume.atsScore}',
-                          style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 13),
+                          style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -156,22 +180,30 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                           children: [
                             Text(
                               l10n.atsScoreLabel,
-                              style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 7),
                             ClipRRect(
                               borderRadius: BorderRadius.circular(2),
                               child: LinearProgressIndicator(
-                                value: (editorState.activeStep + 1) / _totalSteps,
+                                value:
+                                    (editorState.activeStep + 1) / _totalSteps,
                                 minHeight: 4,
-                                backgroundColor: Colors.white.withValues(alpha: 0.1),
-                                valueColor: const AlwaysStoppedAnimation(AppColors.cyan),
+                                backgroundColor:
+                                    Colors.white.withValues(alpha: 0.1),
+                                valueColor: const AlwaysStoppedAnimation(
+                                    AppColors.cyan),
                               ),
                             ),
                             const SizedBox(height: 5),
                             Text(
-                              l10n.stepProgress(editorState.activeStep + 1, _totalSteps),
-                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 9),
+                              l10n.stepProgress(
+                                  editorState.activeStep + 1, _totalSteps),
+                              style: const TextStyle(
+                                  color: AppColors.textSecondary, fontSize: 9),
                             ),
                           ],
                         ),
@@ -183,9 +215,11 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                         style: IconButton.styleFrom(
                           backgroundColor: AppColors.glassBackground,
                           side: const BorderSide(color: AppColors.glassBorder),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
                         ),
-                        icon: const Icon(Icons.layers_outlined, size: 18, color: AppColors.textPrimary),
+                        icon: const Icon(Icons.layers_outlined,
+                            size: 18, color: AppColors.textPrimary),
                       ),
                     ],
                   ),
@@ -228,26 +262,61 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                         ).animate(animation);
                         return FadeTransition(
                           opacity: animation,
-                          child: SlideTransition(position: offset, child: child),
+                          child:
+                              SlideTransition(position: offset, child: child),
                         );
                       },
                       child: IndexedStack(
                         key: ValueKey(editorState.activeStep),
                         index: editorState.activeStep.clamp(0, _totalSteps - 1),
                         children: [
-                          _HeaderStep(notifier: notifier, header: editorState.resume.header, l10n: l10n, cvTitleController: _cvTitleController, nameController: _nameController, titleController: _titleController, emailController: _emailController, phoneController: _phoneController, locationController: _locationController),
-                          _ExperienceStep(editorState: editorState, notifier: notifier, l10n: l10n),
-                          _EducationStep(editorState: editorState, notifier: notifier, l10n: l10n),
-                          _SkillsStep(editorState: editorState, notifier: notifier, l10n: l10n),
-                          _ProjectsStep(editorState: editorState, notifier: notifier, l10n: l10n),
-                          _PhotoStep(editorState: editorState, notifier: notifier, l10n: l10n),
-                          _SummaryStep(editorState: editorState, notifier: notifier, l10n: l10n, summaryController: _summaryController, onGenerate: () {
-                            final currentResume = ref.read(resumeEditorProvider).resume;
-                            final isTurkish = Localizations.localeOf(context).languageCode == 'tr';
-                            final generated = _generateSmartSummary(currentResume, isTurkish);
-                            _summaryController.text = generated;
-                            notifier.updateSummary(generated);
-                          }),
+                          _HeaderStep(
+                              notifier: notifier,
+                              header: editorState.resume.header,
+                              l10n: l10n,
+                              cvTitleController: _cvTitleController,
+                              nameController: _nameController,
+                              titleController: _titleController,
+                              emailController: _emailController,
+                              phoneController: _phoneController,
+                              locationController: _locationController),
+                          _ExperienceStep(
+                              editorState: editorState,
+                              notifier: notifier,
+                              l10n: l10n),
+                          _EducationStep(
+                              editorState: editorState,
+                              notifier: notifier,
+                              l10n: l10n),
+                          _SkillsStep(
+                              editorState: editorState,
+                              notifier: notifier,
+                              l10n: l10n),
+                          _ProjectsStep(
+                              editorState: editorState,
+                              notifier: notifier,
+                              l10n: l10n),
+                          _PhotoStep(
+                              editorState: editorState,
+                              notifier: notifier,
+                              l10n: l10n),
+                          _SummaryStep(
+                              editorState: editorState,
+                              notifier: notifier,
+                              l10n: l10n,
+                              summaryController: _summaryController,
+                              onGenerate: () {
+                                final currentResume =
+                                    ref.read(resumeEditorProvider).resume;
+                                final isTurkish =
+                                    Localizations.localeOf(context)
+                                            .languageCode ==
+                                        'tr';
+                                final generated = _generateSmartSummary(
+                                    currentResume, isTurkish);
+                                _summaryController.text = generated;
+                                notifier.updateSummary(generated);
+                              }),
                         ],
                       ),
                     ),
@@ -260,7 +329,10 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: editorState.activeStep == 0 ? null : () => notifier.updateStep(editorState.activeStep - 1),
+                        onPressed: editorState.activeStep == 0
+                            ? null
+                            : () =>
+                                notifier.updateStep(editorState.activeStep - 1),
                         icon: const Icon(Icons.arrow_back_rounded),
                         label: Text(l10n.previous),
                       ),
@@ -269,7 +341,8 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: editorState.activeStep < _totalSteps - 1
-                            ? () => notifier.updateStep(editorState.activeStep + 1)
+                            ? () =>
+                                notifier.updateStep(editorState.activeStep + 1)
                             : () => context.push('/template-select'),
                         icon: Icon(
                           editorState.activeStep < _totalSteps - 1
@@ -293,7 +366,8 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
     );
   }
 
-  Widget _stepChip(int index, String label, ResumeEditorState state, ResumeEditorNotifier notifier) {
+  Widget _stepChip(int index, String label, ResumeEditorState state,
+      ResumeEditorNotifier notifier) {
     final active = state.activeStep == index;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
@@ -301,12 +375,16 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
         selected: active,
         onSelected: (_) => notifier.updateStep(index),
         label: Text(label),
-        labelStyle: TextStyle(color: active ? Colors.white : AppColors.textSecondary, fontWeight: FontWeight.w700, fontSize: 12),
+        labelStyle: TextStyle(
+            color: active ? Colors.white : AppColors.textSecondary,
+            fontWeight: FontWeight.w700,
+            fontSize: 12),
         selectedColor: AppColors.primaryIndigo,
         backgroundColor: AppColors.glassBackground,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: active ? AppColors.primaryLight : AppColors.glassBorder),
+          side: BorderSide(
+              color: active ? AppColors.primaryLight : AppColors.glassBorder),
         ),
         showCheckmark: false,
       ),
@@ -315,12 +393,17 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
 
   String _generateSmartSummary(ResumeEntity resume, bool isTurkish) {
     final header = resume.header;
-    final title = header.professionalTitle?.trim().isNotEmpty == true ? header.professionalTitle!.trim() : (isTurkish ? 'Yazılım Uzmanı' : 'Software Professional');
+    final title = header.professionalTitle?.trim().isNotEmpty == true
+        ? header.professionalTitle!.trim()
+        : (isTurkish ? 'Yazılım Uzmanı' : 'Software Professional');
     final expList = resume.workExperiences;
     final latestExp = expList.isNotEmpty ? expList.first : null;
     final company = latestExp?.company.trim() ?? '';
     final jobTitle = latestExp?.jobTitle.trim() ?? '';
-    final skillsList = resume.skills.map((s) => s.name.trim()).where((s) => s.isNotEmpty).toList();
+    final skillsList = resume.skills
+        .map((s) => s.name.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
     final topSkills = skillsList.take(5).join(', ');
     final eduList = resume.educationList;
     final topEdu = eduList.isNotEmpty ? eduList.first : null;
@@ -339,14 +422,23 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
         buffer.write('$title olarak kariyerine devam eden ');
       }
       buffer.write('bir profesyonelim. ');
-      if (topSkills.isNotEmpty) buffer.write('Özellikle $topSkills konularında derinlemesine bilgi ve yetkinliğe sahibim. ');
-      if (degree.isNotEmpty || inst.isNotEmpty) buffer.write('${[degree, inst].where((s) => s.isNotEmpty).join(' - ')} eğitimi ile güçlü bir teknik altyapı edindim. ');
+      if (topSkills.isNotEmpty)
+        buffer.write(
+            'Özellikle $topSkills konularında derinlemesine bilgi ve yetkinliğe sahibim. ');
+      if (degree.isNotEmpty || inst.isNotEmpty)
+        buffer.write('${[
+          degree,
+          inst
+        ].where((s) => s.isNotEmpty).join(' - ')} eğitimi ile güçlü bir teknik altyapı edindim. ');
       if (projList.isNotEmpty) {
-        buffer.write('Geliştirdiğim yenilikçi projelerle ölçeklenebilir ve yüksek performanslı çözümler ürettim. ');
+        buffer.write(
+            'Geliştirdiğim yenilikçi projelerle ölçeklenebilir ve yüksek performanslı çözümler ürettim. ');
       } else {
-        buffer.write('Karmaşık problemleri analiz edip kullanıcı odaklı ve sürdürülebilir çözümler sunmaya odaklanıyorum. ');
+        buffer.write(
+            'Karmaşık problemleri analiz edip kullanıcı odaklı ve sürdürülebilir çözümler sunmaya odaklanıyorum. ');
       }
-      buffer.write('Takım çalışmasına yatkın, sürekli öğrenmeye açık ve projelere değer katmayı hedefleyen bir yapıya sahibim.');
+      buffer.write(
+          'Takım çalışmasına yatkın, sürekli öğrenmeye açık ve projelere değer katmayı hedefleyen bir yapıya sahibim.');
       return buffer.toString();
     }
 
@@ -359,12 +451,20 @@ class _ResumeEditorScreenState extends ConsumerState<ResumeEditorScreen> {
     } else {
       buffer.write('$title with a solid technical background. ');
     }
-    if (topSkills.isNotEmpty) buffer.write('Proficient in $topSkills with expertise in building scalable applications. ');
-    if (degree.isNotEmpty || inst.isNotEmpty) buffer.write('Holds an academic background in ${[degree, inst].where((s) => s.isNotEmpty).join(' from ')}. ');
+    if (topSkills.isNotEmpty)
+      buffer.write(
+          'Proficient in $topSkills with expertise in building scalable applications. ');
+    if (degree.isNotEmpty || inst.isNotEmpty)
+      buffer.write('Holds an academic background in ${[
+        degree,
+        inst
+      ].where((s) => s.isNotEmpty).join(' from ')}. ');
     if (projList.isNotEmpty) {
-      buffer.write('Demonstrated ability to design and deliver high-impact end-to-end projects. ');
+      buffer.write(
+          'Demonstrated ability to design and deliver high-impact end-to-end projects. ');
     } else {
-      buffer.write('Passionate about continuous learning, problem-solving, and team collaboration. ');
+      buffer.write(
+          'Passionate about continuous learning, problem-solving, and team collaboration. ');
     }
     return buffer.toString();
   }
@@ -381,25 +481,48 @@ class _HeaderStep extends StatelessWidget {
   final TextEditingController phoneController;
   final TextEditingController locationController;
 
-  const _HeaderStep({required this.notifier, required this.header, required this.l10n, required this.cvTitleController, required this.nameController, required this.titleController, required this.emailController, required this.phoneController, required this.locationController});
+  const _HeaderStep(
+      {required this.notifier,
+      required this.header,
+      required this.l10n,
+      required this.cvTitleController,
+      required this.nameController,
+      required this.titleController,
+      required this.emailController,
+      required this.phoneController,
+      required this.locationController});
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        Text(l10n.personalInfo, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+        Text(l10n.personalInfo,
+            style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w800)),
         const SizedBox(height: 14),
-        _field(l10n.cvTitleLabel, cvTitleController, (val) => notifier.updateTitle(val)),
-        _field(l10n.fullName, nameController, (val) => notifier.updateHeader(header.copyWith(fullName: val))),
-        _field(l10n.professionalTitle, titleController, (val) => notifier.updateHeader(header.copyWith(professionalTitle: val))),
-        _field(l10n.email, emailController, (val) => notifier.updateHeader(header.copyWith(email: val))),
-        _field(l10n.phone, phoneController, (val) => notifier.updateHeader(header.copyWith(phone: val))),
-        _field(l10n.location, locationController, (val) => notifier.updateHeader(header.copyWith(location: val))),
+        _field(l10n.cvTitleLabel, cvTitleController,
+            (val) => notifier.updateTitle(val)),
+        _field(l10n.fullName, nameController,
+            (val) => notifier.updateHeader(header.copyWith(fullName: val))),
+        _field(
+            l10n.professionalTitle,
+            titleController,
+            (val) =>
+                notifier.updateHeader(header.copyWith(professionalTitle: val))),
+        _field(l10n.email, emailController,
+            (val) => notifier.updateHeader(header.copyWith(email: val))),
+        _field(l10n.phone, phoneController,
+            (val) => notifier.updateHeader(header.copyWith(phone: val))),
+        _field(l10n.location, locationController,
+            (val) => notifier.updateHeader(header.copyWith(location: val))),
       ],
     );
   }
 
-  Widget _field(String label, TextEditingController controller, ValueChanged<String> onChanged) {
+  Widget _field(String label, TextEditingController controller,
+      ValueChanged<String> onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: TextField(
@@ -417,7 +540,8 @@ class _ExperienceStep extends StatelessWidget {
   final ResumeEditorNotifier notifier;
   final AppLocalizations l10n;
 
-  const _ExperienceStep({required this.editorState, required this.notifier, required this.l10n});
+  const _ExperienceStep(
+      {required this.editorState, required this.notifier, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -426,18 +550,34 @@ class _ExperienceStep extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Experience', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+            const Text('Experience',
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800)),
             IconButton(
-              onPressed: () => notifier.addWorkExperience(WorkExperience(id: DateTime.now().millisecondsSinceEpoch.toString(), jobTitle: '', company: '', location: '', bulletPoints: const [])),
-              icon: const Icon(Icons.add_circle_rounded, color: AppColors.primaryLight),
+              onPressed: () => notifier.addWorkExperience(WorkExperience(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  jobTitle: '',
+                  company: '',
+                  location: '',
+                  bulletPoints: const [])),
+              icon: const Icon(Icons.add_circle_rounded,
+                  color: AppColors.primaryLight),
             ),
           ],
         ),
         const SizedBox(height: 8),
         if (editorState.resume.workExperiences.isEmpty)
-          const Text('Tap + to add your first role.', style: TextStyle(color: AppColors.textSecondary))
+          const Text('Tap + to add your first role.',
+              style: TextStyle(color: AppColors.textSecondary))
         else
-          ...editorState.resume.workExperiences.asMap().entries.map((entry) => _ExperienceCard(index: entry.key, exp: entry.value, notifier: notifier, l10n: l10n)),
+          ...editorState.resume.workExperiences.asMap().entries.map((entry) =>
+              _ExperienceCard(
+                  index: entry.key,
+                  exp: entry.value,
+                  notifier: notifier,
+                  l10n: l10n)),
       ],
     );
   }
@@ -448,7 +588,11 @@ class _ExperienceCard extends StatefulWidget {
   final WorkExperience exp;
   final ResumeEditorNotifier notifier;
   final AppLocalizations l10n;
-  const _ExperienceCard({required this.index, required this.exp, required this.notifier, required this.l10n});
+  const _ExperienceCard(
+      {required this.index,
+      required this.exp,
+      required this.notifier,
+      required this.l10n});
   @override
   State<_ExperienceCard> createState() => _ExperienceCardState();
 }
@@ -493,7 +637,8 @@ class _ExperienceCardState extends State<_ExperienceCard> {
             children: [
               Expanded(
                 child: TextButton(
-                  onPressed: () => widget.notifier.removeWorkExperience(widget.index),
+                  onPressed: () =>
+                      widget.notifier.removeWorkExperience(widget.index),
                   child: const Text('Delete'),
                 ),
               ),
@@ -506,7 +651,10 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                         jobTitle: _job.text,
                         company: _company.text,
                         location: _location.text,
-                        bulletPoints: _bullets.text.split('\n').where((s) => s.trim().isNotEmpty).toList(),
+                        bulletPoints: _bullets.text
+                            .split('\n')
+                            .where((s) => s.trim().isNotEmpty)
+                            .toList(),
                       ),
                     );
                   },
@@ -520,7 +668,8 @@ class _ExperienceCardState extends State<_ExperienceCard> {
     );
   }
 
-  Widget _input(String label, TextEditingController controller, {int maxLines = 1}) {
+  Widget _input(String label, TextEditingController controller,
+      {int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: TextField(
@@ -537,7 +686,8 @@ class _EducationStep extends StatelessWidget {
   final ResumeEditorNotifier notifier;
   final AppLocalizations l10n;
 
-  const _EducationStep({required this.editorState, required this.notifier, required this.l10n});
+  const _EducationStep(
+      {required this.editorState, required this.notifier, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -546,17 +696,35 @@ class _EducationStep extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Education', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+            const Text('Education',
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800)),
             IconButton(
-              onPressed: () => notifier.addEducation(Education(id: DateTime.now().millisecondsSinceEpoch.toString(), degree: '', institution: '', location: '', startDate: DateTime.now(), endDate: null, isCurrent: false)),
-              icon: const Icon(Icons.add_circle_rounded, color: AppColors.primaryLight),
+              onPressed: () => notifier.addEducation(Education(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  degree: '',
+                  institution: '',
+                  location: '',
+                  startDate: DateTime.now(),
+                  endDate: null,
+                  isCurrent: false)),
+              icon: const Icon(Icons.add_circle_rounded,
+                  color: AppColors.primaryLight),
             ),
           ],
         ),
         if (editorState.resume.educationList.isEmpty)
-          const Text('Tap + to add education.', style: TextStyle(color: AppColors.textSecondary))
+          const Text('Tap + to add education.',
+              style: TextStyle(color: AppColors.textSecondary))
         else
-          ...editorState.resume.educationList.asMap().entries.map((entry) => _EducationCardRow(index: entry.key, education: entry.value, notifier: notifier, l10n: l10n)),
+          ...editorState.resume.educationList.asMap().entries.map((entry) =>
+              _EducationCardRow(
+                  index: entry.key,
+                  education: entry.value,
+                  notifier: notifier,
+                  l10n: l10n)),
       ],
     );
   }
@@ -567,7 +735,11 @@ class _EducationCardRow extends StatelessWidget {
   final Education education;
   final ResumeEditorNotifier notifier;
   final AppLocalizations l10n;
-  const _EducationCardRow({required this.index, required this.education, required this.notifier, required this.l10n});
+  const _EducationCardRow(
+      {required this.index,
+      required this.education,
+      required this.notifier,
+      required this.l10n});
   @override
   Widget build(BuildContext context) {
     final degree = TextEditingController(text: education.degree);
@@ -578,13 +750,27 @@ class _EducationCardRow extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: Column(
         children: [
-          TextField(controller: degree, decoration: InputDecoration(labelText: l10n.degree)),
+          TextField(
+              controller: degree,
+              decoration: InputDecoration(labelText: l10n.degree)),
           const SizedBox(height: 10),
-          TextField(controller: institution, decoration: InputDecoration(labelText: l10n.institution)),
+          TextField(
+              controller: institution,
+              decoration: InputDecoration(labelText: l10n.institution)),
           Row(
             children: [
-              Expanded(child: TextButton(onPressed: () => notifier.removeEducation(index), child: const Text('Delete'))),
-              Expanded(child: ElevatedButton(onPressed: () => notifier.updateEducation(index, education.copyWith(degree: degree.text, institution: institution.text)), child: const Text('Save'))),
+              Expanded(
+                  child: TextButton(
+                      onPressed: () => notifier.removeEducation(index),
+                      child: const Text('Delete'))),
+              Expanded(
+                  child: ElevatedButton(
+                      onPressed: () => notifier.updateEducation(
+                          index,
+                          education.copyWith(
+                              degree: degree.text,
+                              institution: institution.text)),
+                      child: const Text('Save'))),
             ],
           ),
         ],
@@ -597,21 +783,32 @@ class _SkillsStep extends StatelessWidget {
   final ResumeEditorState editorState;
   final ResumeEditorNotifier notifier;
   final AppLocalizations l10n;
-  const _SkillsStep({required this.editorState, required this.notifier, required this.l10n});
+  const _SkillsStep(
+      {required this.editorState, required this.notifier, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
     final skillController = TextEditingController();
     return ListView(
       children: [
-        const Text('Skills', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+        const Text('Skills',
+            style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w800)),
         const SizedBox(height: 12),
-        TextField(controller: skillController, decoration: const InputDecoration(labelText: 'Skill')),
+        TextField(
+            controller: skillController,
+            decoration: const InputDecoration(labelText: 'Skill')),
         const SizedBox(height: 10),
         ElevatedButton.icon(
           onPressed: () {
             final text = skillController.text.trim();
-            if (text.isNotEmpty) notifier.addSkill(Skill(id: DateTime.now().millisecondsSinceEpoch.toString(), name: text, level: 'Intermediate'));
+            if (text.isNotEmpty)
+              notifier.addSkill(Skill(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  name: text,
+                  level: 'Intermediate'));
           },
           icon: const Icon(Icons.add_rounded),
           label: const Text('Add skill'),
@@ -620,7 +817,9 @@ class _SkillsStep extends StatelessWidget {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: editorState.resume.skills.map((skill) => Chip(label: Text(skill.name))).toList(),
+          children: editorState.resume.skills
+              .map((skill) => Chip(label: Text(skill.name)))
+              .toList(),
         ),
       ],
     );
@@ -721,7 +920,8 @@ class _ProjectCardState extends State<_ProjectCard> {
     _urlController = TextEditingController(text: widget.project.url ?? '');
     _technologiesController =
         TextEditingController(text: widget.project.technologies.join(', '));
-    _descriptionController = TextEditingController(text: widget.project.description);
+    _descriptionController =
+        TextEditingController(text: widget.project.description);
   }
 
   @override
@@ -884,7 +1084,9 @@ class _PhotoStep extends StatelessWidget {
       imageQuality: 85,
       maxWidth: 1200,
     );
-    if (image == null) return;
+    if (image == null) {
+      return;
+    }
 
     notifier.updatePhotoBytes(await image.readAsBytes());
   }
@@ -896,7 +1098,12 @@ class _SummaryStep extends StatelessWidget {
   final AppLocalizations l10n;
   final TextEditingController summaryController;
   final VoidCallback onGenerate;
-  const _SummaryStep({required this.editorState, required this.notifier, required this.l10n, required this.summaryController, required this.onGenerate});
+  const _SummaryStep(
+      {required this.editorState,
+      required this.notifier,
+      required this.l10n,
+      required this.summaryController,
+      required this.onGenerate});
 
   @override
   Widget build(BuildContext context) {
@@ -905,8 +1112,15 @@ class _SummaryStep extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Summary', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
-            TextButton.icon(onPressed: onGenerate, icon: const Icon(Icons.auto_awesome, size: 16), label: Text(l10n.enhanceWithAi)),
+            const Text('Summary',
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800)),
+            TextButton.icon(
+                onPressed: onGenerate,
+                icon: const Icon(Icons.auto_awesome, size: 16),
+                label: Text(l10n.enhanceWithAi)),
           ],
         ),
         TextField(
