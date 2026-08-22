@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+# Local service configuration. Never commit Supabase credentials.
+.env
+.env.*
+!*.example
+/config/supabase.json
+/supabase/.temp/

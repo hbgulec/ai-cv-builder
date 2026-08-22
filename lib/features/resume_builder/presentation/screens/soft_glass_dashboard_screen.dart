@@ -3,6 +3,7 @@ import 'package:ai_cv_builder/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/providers/locale_provider.dart';
@@ -12,6 +13,7 @@ import '../../../../core/widgets/soft_glass_shell.dart';
 import '../../../pdf_export/pdf_exporter.dart';
 import '../../../template_engine/template_registry.dart';
 import '../../domain/entities/resume_entity.dart';
+import '../../data/services/supabase_resume_sync_service.dart';
 import '../providers/resume_provider.dart';
 
 /// Hallmark - genre: atmospheric - macrostructure: mobile workbench
@@ -27,6 +29,21 @@ class SoftGlassDashboardScreen extends ConsumerStatefulWidget {
 class _SoftGlassDashboardScreenState
     extends ConsumerState<SoftGlassDashboardScreen> {
   bool _isEditMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.microtask(_loadResumes);
+  }
+
+  Future<void> _loadResumes() async {
+    final resumes =
+        await ref.read(supabaseResumeSyncServiceProvider).loadResumes();
+    if (!mounted) {
+      return;
+    }
+    ref.read(savedResumesProvider.notifier).state = resumes;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -233,7 +250,7 @@ class _SoftGlassDashboardScreenState
         onCreate: () => context.push('/editor'),
         onDestinationSelected: (index) {
           if (index == 2) context.push('/template-select');
-          if (index == 3) _showComingSoon(context, locale);
+          if (index == 3) context.push('/account');
         },
       ),
     );
@@ -288,6 +305,9 @@ class _SoftGlassDashboardScreenState
               saved.state =
                   saved.state.where((item) => item.id != resumeId).toList();
               if (saved.state.isEmpty) setState(() => _isEditMode = false);
+              ref
+                  .read(supabaseResumeSyncServiceProvider)
+                  .deleteResume(resumeId);
             },
             child: Text(l10n.confirmDelete),
           ),
@@ -302,27 +322,9 @@ class _SoftGlassDashboardScreenState
     ResumeEntity original,
   ) {
     final resumes = ref.read(savedResumesProvider);
-    if (!ref.read(isProUserProvider) && resumes.length >= 3) {
-      showDialog<void>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          backgroundColor: AppColors.darkSurface,
-          title: Text(l10n.proRequired),
-          content: Text(l10n.proRequiredMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l10n.maybeLater),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
     final now = DateTime.now();
     final duplicated = original.copyWith(
-      id: now.microsecondsSinceEpoch.toString(),
+      id: const Uuid().v4(),
       title: original.title.isEmpty
           ? 'CV (${l10n.copySuffix})'
           : '${original.title} (${l10n.copySuffix})',
@@ -330,6 +332,7 @@ class _SoftGlassDashboardScreenState
       updatedAt: now,
     );
     ref.read(savedResumesProvider.notifier).state = [...resumes, duplicated];
+    ref.read(supabaseResumeSyncServiceProvider).saveResume(duplicated);
   }
 }
 

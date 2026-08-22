@@ -3,6 +3,7 @@ import '../../../features/resume_builder/presentation/screens/soft_glass_dashboa
 import '../../../features/resume_builder/presentation/screens/resume_editor_screen.dart';
 import '../../../features/resume_builder/presentation/screens/soft_glass_template_selection_screen.dart';
 import '../../../features/resume_builder/presentation/screens/resume_view_screen.dart';
+import '../../../features/resume_builder/presentation/screens/account_screen.dart';
 
 /// GoRouter-based navigation configuration for AI CV Builder.
 class AppRouter {
@@ -26,6 +27,11 @@ class AppRouter {
         path: '/template-select',
         name: 'template-select',
         builder: (context, state) => const SoftGlassTemplateSelectionScreen(),
+      ),
+      GoRoute(
+        path: '/account',
+        name: 'account',
+        builder: (context, state) => const AccountScreen(),
       ),
       GoRoute(
         path: '/view',

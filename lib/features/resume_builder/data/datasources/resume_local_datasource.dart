@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
+
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../domain/entities/resume_entity.dart';
@@ -12,12 +15,32 @@ class ResumeLocalDatasource {
   ResumeLocalDatasource({FlutterSecureStorage? secureStorage})
       : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
-  /// Initialize Hive and open the resumes box
+  /// Opens an encrypted local cache; the AES key stays in secure storage.
   Future<Box<String>> _openBox() async {
     if (!Hive.isBoxOpen(_boxName)) {
-      return await Hive.openBox<String>(_boxName);
+      final key = await _getEncryptionKey();
+      return Hive.openBox<String>(
+        _boxName,
+        encryptionCipher: HiveAesCipher(key),
+      );
     }
     return Hive.box<String>(_boxName);
+  }
+
+  Future<Uint8List> _getEncryptionKey() async {
+    final storedKey = await _secureStorage.read(key: _encryptionKeyName);
+    if (storedKey != null) {
+      return Uint8List.fromList(base64Decode(storedKey));
+    }
+
+    final key = Uint8List.fromList(
+      List<int>.generate(32, (_) => Random.secure().nextInt(256)),
+    );
+    await _secureStorage.write(
+      key: _encryptionKeyName,
+      value: base64Encode(key),
+    );
+    return key;
   }
 
   /// Save a resume entity to local storage
@@ -55,6 +78,16 @@ class ResumeLocalDatasource {
   Future<void> deleteResume(String id) async {
     final box = await _openBox();
     await box.delete(id);
+  }
+
+  /// Replaces the cache after a successful remote sync.
+  Future<void> replaceAll(List<ResumeEntity> resumes) async {
+    final box = await _openBox();
+    final entries = <String, String>{
+      for (final resume in resumes) resume.id: jsonEncode(resume.toJson()),
+    };
+    await box.clear();
+    await box.putAll(entries);
   }
 
   /// Clear all stored resumes

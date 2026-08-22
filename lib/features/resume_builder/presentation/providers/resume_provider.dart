@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import 'package:ai_cv_builder/features/ats_optimizer/domain/services/ats_score_calculator.dart';
 import '../../domain/entities/resume_entity.dart';
 
@@ -49,14 +50,18 @@ class ResumeEditorState {
 
 /// StateNotifier to manage active resume editing state
 class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
+  static const Uuid _uuid = Uuid();
+
   ResumeEditorNotifier([ResumeEntity? initialResume])
       : super(ResumeEditorState(
           resume: initialResume ?? _createBlankResume(),
         ));
 
+  ResumeEntity get currentResume => state.resume;
+
   static ResumeEntity _createBlankResume() {
     return ResumeEntity(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: _uuid.v4(),
       userId: 'local_user',
       title: '',
       header: const HeaderInfo(
@@ -132,14 +137,17 @@ class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
 
   void updateSummary(String summary) {
     state = state.copyWith(
-      resume: state.resume.copyWith(summary: summary, updatedAt: DateTime.now()),
+      resume:
+          state.resume.copyWith(summary: summary, updatedAt: DateTime.now()),
     );
   }
 
   void addWorkExperience(WorkExperience exp) {
-    final list = List<WorkExperience>.from(state.resume.workExperiences)..add(exp);
+    final list = List<WorkExperience>.from(state.resume.workExperiences)
+      ..add(exp);
     state = state.copyWith(
-      resume: state.resume.copyWith(workExperiences: list, updatedAt: DateTime.now()),
+      resume: state.resume
+          .copyWith(workExperiences: list, updatedAt: DateTime.now()),
     );
   }
 
@@ -147,28 +155,34 @@ class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
     final list = List<WorkExperience>.from(state.resume.workExperiences);
     list[index] = exp;
     state = state.copyWith(
-      resume: state.resume.copyWith(workExperiences: list, updatedAt: DateTime.now()),
+      resume: state.resume
+          .copyWith(workExperiences: list, updatedAt: DateTime.now()),
     );
   }
 
   void removeWorkExperience(int index) {
-    final list = List<WorkExperience>.from(state.resume.workExperiences)..removeAt(index);
+    final list = List<WorkExperience>.from(state.resume.workExperiences)
+      ..removeAt(index);
     state = state.copyWith(
-      resume: state.resume.copyWith(workExperiences: list, updatedAt: DateTime.now()),
+      resume: state.resume
+          .copyWith(workExperiences: list, updatedAt: DateTime.now()),
     );
   }
 
   void addEducation(Education edu) {
     final list = List<Education>.from(state.resume.educationList)..add(edu);
     state = state.copyWith(
-      resume: state.resume.copyWith(educationList: list, updatedAt: DateTime.now()),
+      resume:
+          state.resume.copyWith(educationList: list, updatedAt: DateTime.now()),
     );
   }
 
   void removeEducation(int index) {
-    final list = List<Education>.from(state.resume.educationList)..removeAt(index);
+    final list = List<Education>.from(state.resume.educationList)
+      ..removeAt(index);
     state = state.copyWith(
-      resume: state.resume.copyWith(educationList: list, updatedAt: DateTime.now()),
+      resume:
+          state.resume.copyWith(educationList: list, updatedAt: DateTime.now()),
     );
   }
 
@@ -176,7 +190,8 @@ class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
     final list = List<Education>.from(state.resume.educationList);
     list[index] = edu;
     state = state.copyWith(
-      resume: state.resume.copyWith(educationList: list, updatedAt: DateTime.now()),
+      resume:
+          state.resume.copyWith(educationList: list, updatedAt: DateTime.now()),
     );
   }
 
@@ -196,7 +211,8 @@ class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
 
   void setTemplateId(String templateId) {
     state = state.copyWith(
-      resume: state.resume.copyWith(templateId: templateId, updatedAt: DateTime.now()),
+      resume: state.resume
+          .copyWith(templateId: templateId, updatedAt: DateTime.now()),
     );
   }
 
@@ -226,7 +242,8 @@ class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
     if (path == null) {
       state = state.copyWith(
         clearPhotoBytes: true,
-        resume: state.resume.copyWith(photoPath: null, updatedAt: DateTime.now()),
+        resume:
+            state.resume.copyWith(photoPath: null, updatedAt: DateTime.now()),
       );
     } else {
       try {
@@ -237,14 +254,16 @@ class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
             final base64Str = base64Encode(bytes);
             state = state.copyWith(
               photoBytes: bytes,
-              resume: state.resume.copyWith(photoPath: base64Str, updatedAt: DateTime.now()),
+              resume: state.resume
+                  .copyWith(photoPath: base64Str, updatedAt: DateTime.now()),
             );
             return;
           }
         }
       } catch (_) {}
       state = state.copyWith(
-        resume: state.resume.copyWith(photoPath: path, updatedAt: DateTime.now()),
+        resume:
+            state.resume.copyWith(photoPath: path, updatedAt: DateTime.now()),
       );
     }
   }
@@ -253,20 +272,24 @@ class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
     if (bytes == null) {
       state = state.copyWith(
         clearPhotoBytes: true,
-        resume: state.resume.copyWith(photoPath: null, updatedAt: DateTime.now()),
+        resume:
+            state.resume.copyWith(photoPath: null, updatedAt: DateTime.now()),
       );
     } else {
       final base64Str = base64Encode(bytes);
       state = state.copyWith(
         photoBytes: bytes,
-        resume: state.resume.copyWith(photoPath: base64Str, updatedAt: DateTime.now()),
+        resume: state.resume
+            .copyWith(photoPath: base64Str, updatedAt: DateTime.now()),
       );
     }
   }
 
   /// Saves the current editor resume into the saved resumes list with dynamic ATS score calculation.
   /// Returns [SaveResult.proRequired] if user has 3+ resumes and is not a Pro user (new resume only).
-  SaveResult saveCurrentResume(StateController<List<ResumeEntity>> savedNotifier, {required bool isPro}) {
+  SaveResult saveCurrentResume(
+      StateController<List<ResumeEntity>> savedNotifier,
+      {required bool isPro}) {
     final computedScore = AtsScoreCalculator.calculateScore(state.resume);
     final resume = state.resume.copyWith(
       atsScore: computedScore,
@@ -280,10 +303,7 @@ class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
       // Updating existing resume — always allowed
       list[existingIndex] = resume;
     } else {
-      // Adding new resume — check Pro limit
-      if (!isPro && list.length >= 3) {
-        return SaveResult.proRequired;
-      }
+      // CV creation is free and unlimited; only selected templates are PRO.
       list.add(resume);
     }
     savedNotifier.state = list;
@@ -298,25 +318,7 @@ final resumeEditorProvider =
 });
 
 /// Riverpod provider listing user's saved resumes
-final savedResumesProvider = StateProvider<List<ResumeEntity>>((ref) {
-  return [
-    ResumeEntity(
-      id: 'demo_1',
-      userId: 'local_user',
-      title: 'Senior Software Engineer CV',
-      header: const HeaderInfo(
-        fullName: 'Ahmet Yılmaz',
-        professionalTitle: 'Kıdemli Yazılım Geliştirici',
-        email: 'ahmet.yilmaz@example.com',
-        phone: '+90 555 123 45 67',
-        location: 'İstanbul, Türkiye',
-      ),
-      templateId: 'ats_classic',
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      updatedAt: DateTime.now().subtract(const Duration(hours: 3)),
-    ),
-  ];
-});
+final savedResumesProvider = StateProvider<List<ResumeEntity>>((ref) => []);
 
 /// Whether the current user has a Pro subscription.
 /// Defaults to false — toggled by purchase flow.

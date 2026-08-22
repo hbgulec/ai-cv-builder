@@ -28,6 +28,15 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Profil fotoğrafınızı özgeçmişinizde kullanabilmeniz için fotoğraf kitaplığınıza erişim gerekir.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>aicvbuilder</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -12,6 +12,7 @@ import '../../../../core/widgets/soft_glass_shell.dart';
 import '../../../pdf_export/pdf_exporter.dart';
 import '../../../template_engine/domain/entities/template_config.dart';
 import '../../../template_engine/template_registry.dart';
+import '../../data/services/supabase_resume_sync_service.dart';
 import '../providers/resume_provider.dart';
 
 /// Hallmark - genre: atmospheric - macrostructure: mobile catalogue
@@ -210,16 +211,16 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
     );
   }
 
-  void _saveOnly(
+  Future<void> _saveOnly(
     BuildContext context,
     WidgetRef ref,
     ResumeEditorNotifier notifier,
     AppLocalizations l10n,
-  ) {
-    final result = notifier.saveCurrentResume(
-      ref.read(savedResumesProvider.notifier),
-      isPro: ref.read(isProUserProvider),
-    );
+  ) async {
+    final result = await _saveResume(ref, notifier);
+    if (!context.mounted) {
+      return;
+    }
     if (result == SaveResult.proRequired) {
       _showProPaywall(context, l10n);
       return;
@@ -237,10 +238,10 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
     BaseResumeTemplate template,
     Map<String, dynamic> resumeData,
   ) async {
-    final result = notifier.saveCurrentResume(
-      ref.read(savedResumesProvider.notifier),
-      isPro: ref.read(isProUserProvider),
-    );
+    final result = await _saveResume(ref, notifier);
+    if (!context.mounted) {
+      return;
+    }
     if (result == SaveResult.proRequired) {
       _showProPaywall(context, l10n);
       return;
@@ -250,6 +251,30 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
     await PdfExporter.savePdf(
         template: template, resumeData: resumeData, context: context);
     if (context.mounted) context.go('/');
+  }
+
+  Future<SaveResult> _saveResume(
+    WidgetRef ref,
+    ResumeEditorNotifier notifier,
+  ) async {
+    final result = notifier.saveCurrentResume(
+      ref.read(savedResumesProvider.notifier),
+      isPro: ref.read(isProUserProvider),
+    );
+    if (result != SaveResult.success) {
+      return result;
+    }
+
+    final currentResume = notifier.currentResume;
+    final localId = currentResume.id;
+    final syncedResume = await ref
+        .read(supabaseResumeSyncServiceProvider)
+        .saveResume(currentResume);
+    // The persisted record is authoritative; dashboard reload will reflect it.
+    if (syncedResume.id != localId) {
+      notifier.loadResume(syncedResume);
+    }
+    return result;
   }
 
   void _showProPaywall(BuildContext context, AppLocalizations l10n) {
