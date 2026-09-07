@@ -13,6 +13,7 @@ _$ResumeEntityImpl _$$ResumeEntityImplFromJson(Map<String, dynamic> json) =>
       title: json['title'] as String,
       contentLanguage: json['contentLanguage'] as String? ?? 'en',
       templateId: json['templateId'] as String? ?? 'ats_classic',
+      templateColorIndex: (json['templateColorIndex'] as num?)?.toInt() ?? 0,
       header: HeaderInfo.fromJson(json['header'] as Map<String, dynamic>),
       workExperiences: (json['workExperiences'] as List<dynamic>?)
               ?.map((e) => WorkExperience.fromJson(e as Map<String, dynamic>))
@@ -59,6 +60,7 @@ Map<String, dynamic> _$$ResumeEntityImplToJson(_$ResumeEntityImpl instance) =>
       'title': instance.title,
       'contentLanguage': instance.contentLanguage,
       'templateId': instance.templateId,
+      'templateColorIndex': instance.templateColorIndex,
       'header': instance.header,
       'workExperiences': instance.workExperiences,
       'educationList': instance.educationList,
@@ -232,7 +234,7 @@ _$LanguageProficiencyImpl _$$LanguageProficiencyImplFromJson(
     _$LanguageProficiencyImpl(
       id: json['id'] as String? ?? '',
       language: json['language'] as String,
-      proficiency: json['proficiency'] as String? ?? 'Intermediate',
+      proficiency: json['proficiency'] as String? ?? '',
     );
 
 Map<String, dynamic> _$$LanguageProficiencyImplToJson(

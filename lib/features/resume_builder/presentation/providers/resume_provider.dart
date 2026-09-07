@@ -10,6 +10,8 @@ import '../../domain/entities/resume_entity.dart';
 /// Result of a save operation.
 enum SaveResult { success, proRequired }
 
+enum TemplateCatalogFilter { all, free, pro }
+
 /// State class for the active resume editing session.
 class ResumeEditorState {
   final ResumeEntity resume;
@@ -209,10 +211,38 @@ class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
     );
   }
 
+  void addLanguage(LanguageProficiency language) {
+    final list = List<LanguageProficiency>.from(state.resume.languages)
+      ..add(language);
+    state = state.copyWith(
+      resume: state.resume.copyWith(languages: list, updatedAt: DateTime.now()),
+    );
+  }
+
+  void removeLanguage(int index) {
+    final list = List<LanguageProficiency>.from(state.resume.languages)
+      ..removeAt(index);
+    state = state.copyWith(
+      resume: state.resume.copyWith(languages: list, updatedAt: DateTime.now()),
+    );
+  }
+
   void setTemplateId(String templateId) {
     state = state.copyWith(
-      resume: state.resume
-          .copyWith(templateId: templateId, updatedAt: DateTime.now()),
+      resume: state.resume.copyWith(
+        templateId: templateId,
+        templateColorIndex: 0,
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  void setTemplateColorIndex(int colorIndex) {
+    state = state.copyWith(
+      resume: state.resume.copyWith(
+        templateColorIndex: colorIndex.clamp(0, 4),
+        updatedAt: DateTime.now(),
+      ),
     );
   }
 
@@ -286,10 +316,15 @@ class ResumeEditorNotifier extends StateNotifier<ResumeEditorState> {
   }
 
   /// Saves the current editor resume into the saved resumes list with dynamic ATS score calculation.
-  /// Returns [SaveResult.proRequired] if user has 3+ resumes and is not a Pro user (new resume only).
+  /// Returns [SaveResult.proRequired] when a non-PRO user chooses a PRO template.
   SaveResult saveCurrentResume(
       StateController<List<ResumeEntity>> savedNotifier,
-      {required bool isPro}) {
+      {required bool isPro,
+      required bool selectedTemplateIsPremium}) {
+    if (selectedTemplateIsPremium && !isPro) {
+      return SaveResult.proRequired;
+    }
+
     final computedScore = AtsScoreCalculator.calculateScore(state.resume);
     final resume = state.resume.copyWith(
       atsScore: computedScore,
@@ -323,3 +358,7 @@ final savedResumesProvider = StateProvider<List<ResumeEntity>>((ref) => []);
 /// Whether the current user has a Pro subscription.
 /// Defaults to false — toggled by purchase flow.
 final isProUserProvider = StateProvider<bool>((ref) => false);
+
+/// Current access filter for the mobile template catalogue.
+final templateCatalogFilterProvider =
+    StateProvider<TemplateCatalogFilter>((ref) => TemplateCatalogFilter.all);

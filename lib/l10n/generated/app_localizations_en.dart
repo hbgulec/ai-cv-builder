@@ -98,6 +98,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
+  String get save => 'Save';
+
+  @override
   String get headerStep => 'Contact Info';
 
   @override
@@ -203,6 +206,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addExperience => 'Add Work Experience';
 
   @override
+  String get noExperiencesYet => 'Tap + to add your first role.';
+
+  @override
   String get education => 'Education';
 
   @override
@@ -233,7 +239,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentlyStudyHere => 'I currently study here';
 
   @override
+  String get noEducationYet => 'Tap + to add education.';
+
+  @override
   String get skillsCompetencies => 'Skills & Competencies';
+
+  @override
+  String get skill => 'Skill';
 
   @override
   String get skillHint => 'Add a skill (e.g. Flutter, Dart, Riverpod)...';
@@ -368,7 +380,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get proRequiredMessage =>
-      'Free users can save up to 3 resumes. Upgrade to AI CV Builder Pro to save unlimited resumes and unlock premium templates.';
+      'Resume creation and PDF export are free. Upgrade to AI CV Builder Pro to unlock selected PRO templates.';
 
   @override
   String get upgradeToPro => 'Upgrade to Pro';
@@ -384,4 +396,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copySuffix => 'Copy';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get scanJobDescription => 'Scan Job Description';
+
+  @override
+  String get resumeScoreTitle => 'Your Resume Score';
+
+  @override
+  String get scoreStructure => 'Structure';
+
+  @override
+  String get scoreContent => 'Content';
+
+  @override
+  String get scoreKeywords => 'Keywords';
+
+  @override
+  String get improveNow => 'Improve now';
+
+  @override
+  String get previewCv => 'Preview your CV';
+
+  @override
+  String get previewCvSubtitle => 'A calm full-screen review before export.';
+
+  @override
+  String get versionHistory => 'Version history';
+
+  @override
+  String get preparingPdf => 'Preparing PDF...';
 }

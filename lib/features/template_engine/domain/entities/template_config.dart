@@ -3,7 +3,10 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+
+import '../../resume_template_palette.dart';
 
 /// Configuration model for each resume template.
 /// Decoupled from data: templates only define how data is visually rendered.
@@ -27,11 +30,36 @@ class TemplateConfig {
     required this.accentColor,
     required this.thumbnailAsset,
   });
+
+  List<Color> get colorOptions =>
+      ResumeTemplatePalette.optionsFor(id, primaryColor);
 }
 
 /// Abstract base class for all resume template renderers
 abstract class BaseResumeTemplate {
   TemplateConfig get config;
+
+  bool isFirstPage(Map<String, dynamic> resumeData) =>
+      resumeData['_isFirstPage'] != false &&
+      (resumeData['_pageIndex'] == null || resumeData['_pageIndex'] == 0);
+
+  Color templateColor(
+    Map<String, dynamic> resumeData, {
+    Color? fallback,
+  }) =>
+      ResumeTemplatePalette.selected(
+        resumeData,
+        fallback: fallback ?? config.primaryColor,
+      );
+
+  PdfColor templatePdfColor(
+    Map<String, dynamic> resumeData, {
+    Color? fallback,
+  }) =>
+      ResumeTemplatePalette.selectedPdf(
+        resumeData,
+        fallback: fallback ?? config.primaryColor,
+      );
 
   /// Helper to resolve image bytes from photoBytes or photoPath (base64 string or file)
   Uint8List? resolvePhotoBytes(Map<String, dynamic> resumeData) {
@@ -106,7 +134,9 @@ abstract class BaseResumeTemplate {
   }
 
   /// Helper to safely format date range strings (e.g. 01/2020 - 12/2022 or 05/2021 - Present/Halen)
-  String formatDateRange(dynamic startDateVal, dynamic endDateVal, dynamic isCurrentVal, {String languageCode = 'en'}) {
+  String formatDateRange(
+      dynamic startDateVal, dynamic endDateVal, dynamic isCurrentVal,
+      {String languageCode = 'en'}) {
     String formatSingle(dynamic val) {
       if (val == null) return '';
       if (val is DateTime) {
@@ -137,7 +167,8 @@ abstract class BaseResumeTemplate {
     }
 
     final startStr = formatSingle(startDateVal);
-    final bool isCurrent = isCurrentVal == true || isCurrentVal.toString().toLowerCase() == 'true';
+    final bool isCurrent =
+        isCurrentVal == true || isCurrentVal.toString().toLowerCase() == 'true';
     final presentLabel = languageCode.startsWith('tr') ? 'Halen' : 'Present';
     final endStr = isCurrent ? presentLabel : formatSingle(endDateVal);
 

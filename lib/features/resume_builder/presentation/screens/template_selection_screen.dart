@@ -8,6 +8,7 @@ import '../../../../core/widgets/glass_card.dart';
 import '../../../pdf_export/pdf_exporter.dart';
 import '../../../template_engine/domain/entities/template_config.dart';
 import '../../../template_engine/template_registry.dart';
+import '../../../template_engine/widgets/resume_template_canvas.dart';
 import '../providers/resume_provider.dart';
 
 class TemplateSelectionScreen extends ConsumerWidget {
@@ -28,7 +29,8 @@ class TemplateSelectionScreen extends ConsumerWidget {
 
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: AppColors.darkBackgroundGradient),
+        decoration:
+            const BoxDecoration(gradient: AppColors.darkBackgroundGradient),
         child: SafeArea(
           child: Column(
             children: [
@@ -38,26 +40,40 @@ class TemplateSelectionScreen extends ConsumerWidget {
                   children: [
                     IconButton(
                       onPressed: () => context.pop(),
-                      icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+                      icon: const Icon(Icons.arrow_back_rounded,
+                          color: AppColors.textPrimary),
                     ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(l10n.selectDesign, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-                          Text(l10n.standardizedTemplates, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          Text(l10n.selectDesign,
+                              style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary)),
+                          Text(l10n.standardizedTemplates,
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary)),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: AppColors.glassBackground,
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(color: AppColors.glassBorder),
                       ),
-                      child: Text(selectedTemplate.config.isPremium ? 'PRO' : 'FREE', style: const TextStyle(color: AppColors.textPrimary, fontSize: 11, fontWeight: FontWeight.w700)),
+                      child: Text(
+                          selectedTemplate.config.isPremium ? 'PRO' : 'FREE',
+                          style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700)),
                     ),
                   ],
                 ),
@@ -74,9 +90,18 @@ class TemplateSelectionScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Soft Glass Mobile', style: TextStyle(color: AppColors.textPrimary, fontSize: 22, fontWeight: FontWeight.w800, height: 1.05)),
+                            const Text('Soft Glass Mobile',
+                                style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.05)),
                             const SizedBox(height: 8),
-                            Text(l10n.selectDesign, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4)),
+                            Text(l10n.selectDesign,
+                                style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                    height: 1.4)),
                           ],
                         ),
                       ),
@@ -86,10 +111,17 @@ class TemplateSelectionScreen extends ConsumerWidget {
                         height: 76,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 2),
+                          border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.35),
+                              width: 2),
                         ),
                         child: Center(
-                          child: Text('${selectedTemplate.config.isPremium ? 1 : 0}', style: const TextStyle(color: AppColors.primaryLight, fontWeight: FontWeight.w800, fontSize: 22)),
+                          child: Text(
+                              '${selectedTemplate.config.isPremium ? 1 : 0}',
+                              style: const TextStyle(
+                                  color: AppColors.primaryLight,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 22)),
                         ),
                       ),
                     ],
@@ -109,14 +141,15 @@ class TemplateSelectionScreen extends ConsumerWidget {
                       template: template,
                       isSelected: isSelected,
                       resumeData: resumeData,
-                      onSelect: () => notifier.setTemplateId(template.config.id),
+                      onSelect: () =>
+                          notifier.setTemplateId(template.config.id),
                     );
                   },
                 ),
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.glassBackground,
                   border: Border(top: BorderSide(color: AppColors.glassBorder)),
                 ),
@@ -126,8 +159,14 @@ class TemplateSelectionScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Selected', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
-                        Text(selectedTemplate.config.name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
+                        const Text('Selected',
+                            style: TextStyle(
+                                color: AppColors.textMuted, fontSize: 11)),
+                        Text(selectedTemplate.config.name,
+                            style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -137,12 +176,17 @@ class TemplateSelectionScreen extends ConsumerWidget {
                           child: OutlinedButton(
                             onPressed: () {
                               final isPro = ref.read(isProUserProvider);
-                              final result = notifier.saveCurrentResume(ref.read(savedResumesProvider.notifier), isPro: isPro);
+                              final result = notifier.saveCurrentResume(
+                                  ref.read(savedResumesProvider.notifier),
+                                  isPro: isPro,
+                                  selectedTemplateIsPremium:
+                                      selectedTemplate.config.isPremium);
                               if (result == SaveResult.proRequired) {
                                 _showProPaywall(context, l10n);
                                 return;
                               }
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.cvSavedSuccess)));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(l10n.cvSavedSuccess)));
                               context.go('/');
                             },
                             child: Text(l10n.saveOnly),
@@ -153,13 +197,22 @@ class TemplateSelectionScreen extends ConsumerWidget {
                           child: ElevatedButton(
                             onPressed: () async {
                               final isPro = ref.read(isProUserProvider);
-                              final result = notifier.saveCurrentResume(ref.read(savedResumesProvider.notifier), isPro: isPro);
+                              final result = notifier.saveCurrentResume(
+                                  ref.read(savedResumesProvider.notifier),
+                                  isPro: isPro,
+                                  selectedTemplateIsPremium:
+                                      selectedTemplate.config.isPremium);
                               if (result == SaveResult.proRequired) {
                                 _showProPaywall(context, l10n);
                                 return;
                               }
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.cvSavedDownloading)));
-                              await PdfExporter.savePdf(template: selectedTemplate, resumeData: resumeData, context: context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(l10n.cvSavedDownloading)));
+                              await PdfExporter.savePdf(
+                                  template: selectedTemplate,
+                                  resumeData: resumeData,
+                                  context: context);
                               if (context.mounted) context.go('/');
                             },
                             child: Text(l10n.saveAndPdf),
@@ -182,11 +235,17 @@ class TemplateSelectionScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.darkSurface,
-        title: Text(l10n.proRequired, style: const TextStyle(color: AppColors.textPrimary)),
-        content: Text(l10n.proRequiredMessage, style: const TextStyle(color: AppColors.textSecondary)),
+        title: Text(l10n.proRequired,
+            style: const TextStyle(color: AppColors.textPrimary)),
+        content: Text(l10n.proRequiredMessage,
+            style: const TextStyle(color: AppColors.textSecondary)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10n.maybeLater)),
-          ElevatedButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10n.upgradeToPro)),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.maybeLater)),
+          ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.upgradeToPro)),
         ],
       ),
     );
@@ -199,7 +258,11 @@ class _TemplateTile extends StatelessWidget {
   final Map<String, dynamic> resumeData;
   final VoidCallback onSelect;
 
-  const _TemplateTile({required this.template, required this.isSelected, required this.resumeData, required this.onSelect});
+  const _TemplateTile(
+      {required this.template,
+      required this.isSelected,
+      required this.resumeData,
+      required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +274,10 @@ class _TemplateTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.glassBackground,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? AppColors.primaryLight : AppColors.glassBorder, width: isSelected ? 1.4 : 1),
+          border: Border.all(
+              color:
+                  isSelected ? AppColors.primaryLight : AppColors.glassBorder,
+              width: isSelected ? 1.4 : 1),
         ),
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -220,17 +286,31 @@ class _TemplateTile extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(config.name, style: TextStyle(color: isSelected ? AppColors.textPrimary : AppColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)),
+                  child: Text(config.name,
+                      style: TextStyle(
+                          color: isSelected
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700)),
                 ),
                 if (config.isPremium)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                    decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
-                    child: const Text('PRO', style: TextStyle(color: AppColors.primaryLight, fontSize: 9, fontWeight: FontWeight.w800)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999)),
+                    child: const Text('PRO',
+                        style: TextStyle(
+                            color: AppColors.primaryLight,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800)),
                   ),
                 if (isSelected) ...[
                   const SizedBox(width: 8),
-                  const Icon(Icons.check_circle_rounded, color: AppColors.primaryLight, size: 18),
+                  const Icon(Icons.check_circle_rounded,
+                      color: AppColors.primaryLight, size: 18),
                 ],
               ],
             ),
@@ -242,12 +322,11 @@ class _TemplateTile extends StatelessWidget {
                 child: AspectRatio(
                   aspectRatio: 1 / 1.38,
                   child: FittedBox(
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                     alignment: Alignment.topCenter,
-                    child: SizedBox(
-                      width: 380,
-                      height: 540,
-                      child: template.buildPreview(resumeData),
+                    child: ResumeTemplateCanvas(
+                      template: template,
+                      resumeData: resumeData,
                     ),
                   ),
                 ),

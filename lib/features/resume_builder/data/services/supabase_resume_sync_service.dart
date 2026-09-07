@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/config/supabase_bootstrap.dart';
 import '../datasources/resume_local_datasource.dart';
 import '../../domain/entities/resume_entity.dart';
+import '../../domain/entities/resume_version.dart';
 
 class SupabaseResumeSyncService {
   SupabaseResumeSyncService({
@@ -40,6 +41,11 @@ class SupabaseResumeSyncService {
       };
 
       for (final localResume in localResumes.where((item) => !item.isSynced)) {
+        // Preserve the remote document before applying an offline edit.
+        final previousResume = mergedById[localResume.id];
+        if (previousResume != null) {
+          await _captureVersion(user, previousResume);
+        }
         final syncedResume = await _upsert(user, localResume);
         mergedById[syncedResume.id] = syncedResume;
       }
@@ -52,7 +58,11 @@ class SupabaseResumeSyncService {
     }
   }
 
-  Future<ResumeEntity> saveResume(ResumeEntity resume) async {
+  /// Persists a user edit and optionally records a recoverable snapshot.
+  Future<ResumeEntity> saveResume(
+    ResumeEntity resume, {
+    bool captureVersion = true,
+  }) async {
     final pendingResume = resume.copyWith(isSynced: false);
     await _localDatasource.saveResume(pendingResume);
     if (!isConfigured) {
@@ -61,12 +71,49 @@ class SupabaseResumeSyncService {
 
     try {
       final user = await _ensureUser();
+      if (captureVersion) {
+        final previousResume = await _loadRemoteResume(user, pendingResume.id);
+        if (previousResume != null) {
+          await _captureVersion(user, previousResume);
+        }
+      }
       final syncedResume = await _upsert(user, pendingResume);
       await _localDatasource.saveResume(syncedResume);
       return syncedResume;
     } catch (_) {
       return pendingResume;
     }
+  }
+
+  Future<List<ResumeVersion>> loadVersions(String resumeId) async {
+    if (!isConfigured || !_isUuid(resumeId)) {
+      return const [];
+    }
+
+    try {
+      final user = await _ensureUser();
+      final response = await Supabase.instance.client
+          .from('resume_versions')
+          .select()
+          .eq('resume_id', resumeId)
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false);
+      return (response as List<dynamic>)
+          .map((row) => ResumeVersion.fromRow(Map<String, dynamic>.from(row)))
+          .toList(growable: false);
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<ResumeEntity> restoreVersion(ResumeVersion version) {
+    final restored = version.resume.copyWith(
+      id: version.resumeId,
+      isSynced: false,
+      updatedAt: DateTime.now(),
+    );
+    // Restoring changes the current document but is not a new user save point.
+    return saveResume(restored, captureVersion: false);
   }
 
   Future<void> deleteResume(String resumeId) async {
@@ -127,6 +174,32 @@ class SupabaseResumeSyncService {
       onConflict: 'id',
     );
     return ownedResume;
+  }
+
+  Future<ResumeEntity?> _loadRemoteResume(User user, String resumeId) async {
+    if (!_isUuid(resumeId)) {
+      return null;
+    }
+
+    final row = await Supabase.instance.client
+        .from('resumes')
+        .select()
+        .eq('id', resumeId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+    return row == null ? null : _resumeFromRow(row);
+  }
+
+  Future<void> _captureVersion(User user, ResumeEntity resume) async {
+    try {
+      await Supabase.instance.client.from('resume_versions').insert({
+        'resume_id': resume.id,
+        'user_id': user.id,
+        'document': resume.toJson(),
+      });
+    } catch (_) {
+      // Version history is additive. A missing migration must never block CV saves.
+    }
   }
 
   ResumeEntity _resumeFromRow(dynamic row) {

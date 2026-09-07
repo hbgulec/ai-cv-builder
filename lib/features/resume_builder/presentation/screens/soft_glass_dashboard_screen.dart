@@ -29,11 +29,20 @@ class SoftGlassDashboardScreen extends ConsumerStatefulWidget {
 class _SoftGlassDashboardScreenState
     extends ConsumerState<SoftGlassDashboardScreen> {
   bool _isEditMode = false;
+  int _selectedDockIndex = 0;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _resumeSectionKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     Future<void>.microtask(_loadResumes);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadResumes() async {
@@ -60,6 +69,7 @@ class _SoftGlassDashboardScreenState
         child: SafeArea(
           bottom: false,
           child: CustomScrollView(
+            controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
               SliverPadding(
@@ -127,7 +137,7 @@ class _SoftGlassDashboardScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const _SectionTitle(title: 'Get Started'),
+                        _SectionTitle(title: l10n.getStarted),
                         const SizedBox(height: 10),
                         Row(
                           children: [
@@ -143,9 +153,7 @@ class _SoftGlassDashboardScreenState
                             const SizedBox(width: 10),
                             Expanded(
                               child: AppButton(
-                                text: locale.languageCode == 'tr'
-                                    ? 'İlan Tara'
-                                    : 'Scan Job Description',
+                                text: l10n.scanJobDescription,
                                 icon: Icons.document_scanner_outlined,
                                 isSecondary: true,
                                 compact: true,
@@ -161,6 +169,7 @@ class _SoftGlassDashboardScreenState
                 ),
               ),
               SliverPadding(
+                key: _resumeSectionKey,
                 padding: const EdgeInsets.fromLTRB(20, 22, 20, 10),
                 sliver: SliverToBoxAdapter(
                   child: Row(
@@ -223,6 +232,7 @@ class _SoftGlassDashboardScreenState
                         ..['contentLanguage'] = locale.languageCode;
                       return _CompactResumeCard(
                         resume: resume,
+                        l10n: l10n,
                         isEditMode: _isEditMode,
                         templateName: template.config.name,
                         onOpen: () => context.push('/view?id=${resume.id}'),
@@ -246,14 +256,47 @@ class _SoftGlassDashboardScreenState
         ),
       ),
       bottomNavigationBar: SoftGlassDock(
-        selectedIndex: 0,
+        selectedIndex: _selectedDockIndex,
         onCreate: () => context.push('/editor'),
-        onDestinationSelected: (index) {
-          if (index == 2) context.push('/template-select');
-          if (index == 3) context.push('/account');
-        },
+        onDestinationSelected: _onDestinationSelected,
       ),
     );
+  }
+
+  void _onDestinationSelected(int index) {
+    if (index == 0) {
+      setState(() => _selectedDockIndex = index);
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+      );
+      return;
+    }
+    if (index == 1) {
+      setState(() {
+        _selectedDockIndex = index;
+        _isEditMode = false;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final target = _resumeSectionKey.currentContext;
+        if (target != null) {
+          Scrollable.ensureVisible(
+            target,
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+      return;
+    }
+    if (index == 2) {
+      context.push('/template-select');
+      return;
+    }
+    if (index == 3) {
+      context.push('/account');
+    }
   }
 
   String _firstName(List<ResumeEntity> resumes, String languageCode) {
@@ -418,14 +461,15 @@ class _ResumeScoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolvedScore = hasResume ? score : 0;
+    final l10n = AppLocalizations.of(context)!;
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Your Resume Score',
-            style: TextStyle(
+          Text(
+            l10n.resumeScoreTitle,
+            style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -436,14 +480,14 @@ class _ResumeScoreCard extends StatelessWidget {
             children: [
               _ScoreRing(score: resolvedScore),
               const SizedBox(width: 18),
-              const Expanded(
+              Expanded(
                 child: Column(
                   children: [
-                    _ScoreBar(label: 'Structure', value: 0.78),
-                    SizedBox(height: 9),
-                    _ScoreBar(label: 'Content', value: 0.88),
-                    SizedBox(height: 9),
-                    _ScoreBar(label: 'Keywords', value: 0.66),
+                    _ScoreBar(label: l10n.scoreStructure, value: 0.78),
+                    const SizedBox(height: 9),
+                    _ScoreBar(label: l10n.scoreContent, value: 0.88),
+                    const SizedBox(height: 9),
+                    _ScoreBar(label: l10n.scoreKeywords, value: 0.66),
                   ],
                 ),
               ),
@@ -456,7 +500,7 @@ class _ResumeScoreCard extends StatelessWidget {
               onPressed: hasResume ? onImprove : null,
               iconAlignment: IconAlignment.end,
               icon: const Icon(Icons.chevron_right_rounded, size: 16),
-              label: const Text('Improve now'),
+              label: Text(l10n.improveNow),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textSecondary,
                 visualDensity: VisualDensity.compact,
@@ -567,6 +611,7 @@ class _SectionTitle extends StatelessWidget {
 
 class _CompactResumeCard extends StatelessWidget {
   final ResumeEntity resume;
+  final AppLocalizations l10n;
   final String templateName;
   final bool isEditMode;
   final VoidCallback onOpen;
@@ -577,6 +622,7 @@ class _CompactResumeCard extends StatelessWidget {
 
   const _CompactResumeCard({
     required this.resume,
+    required this.l10n,
     required this.templateName,
     required this.isEditMode,
     required this.onOpen,
@@ -590,7 +636,7 @@ class _CompactResumeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassCard(
       showShadow: false,
-      onTap: isEditMode ? null : onOpen,
+      onTap: onOpen,
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
@@ -631,11 +677,12 @@ class _CompactResumeCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      _SmallAction(label: 'Edit', onTap: onEdit),
+                      _SmallAction(label: l10n.view, onTap: onOpen),
+                      _SmallAction(label: l10n.edit, onTap: onEdit),
                       _SmallAction(label: 'PDF', onTap: onPdf),
-                      _SmallAction(label: 'Copy', onTap: onDuplicate),
+                      _SmallAction(label: l10n.duplicate, onTap: onDuplicate),
                       _SmallAction(
-                          label: 'Delete', onTap: onDelete, danger: true),
+                          label: l10n.delete, onTap: onDelete, danger: true),
                     ],
                   ),
                 ],

@@ -3,6 +3,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../template_engine/domain/entities/template_config.dart';
+import '../template_engine/resume_page_data.dart';
 
 /// PDF Exporter utility for generating high-resolution vector PDFs off-thread.
 class PdfExporter {
@@ -51,8 +52,11 @@ class PdfExporter {
         pw.Font.helveticaBold(),
       );
 
-      final page = template.buildPdfPage(resumeData, fontRegular, fontBold);
-      pdf.addPage(page);
+      for (final pageData in ResumePageData.split(resumeData)) {
+        pdf.addPage(
+          template.buildPdfPage(pageData, fontRegular, fontBold),
+        );
+      }
 
       final bytes = await pdf.save();
       final headerMap = template.safeToMap(resumeData['header']);

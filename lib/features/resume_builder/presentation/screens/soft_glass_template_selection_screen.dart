@@ -1,3 +1,4 @@
+// Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V4
 // Hallmark - mobile catalogue - design-system: design.md - designed-as-app
 import 'package:ai_cv_builder/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -6,14 +7,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/providers/locale_provider.dart';
-import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/soft_glass_shell.dart';
 import '../../../pdf_export/pdf_exporter.dart';
 import '../../../template_engine/domain/entities/template_config.dart';
+import '../../../template_engine/resume_page_data.dart';
 import '../../../template_engine/template_registry.dart';
+import '../../../template_engine/widgets/resume_template_canvas.dart';
 import '../../data/services/supabase_resume_sync_service.dart';
 import '../providers/resume_provider.dart';
+import '../widgets/template_preview_sheet.dart';
 
 /// Hallmark - genre: atmospheric - macrostructure: mobile catalogue
 /// design-system: design.md - designed-as-app
@@ -25,13 +28,22 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
     final state = ref.watch(resumeEditorProvider);
     final notifier = ref.read(resumeEditorProvider.notifier);
     final locale = ref.watch(localeProvider);
-    final templates = TemplateRegistry.getAll();
+    final allTemplates = TemplateRegistry.getAll();
+    final catalogFilter = ref.watch(templateCatalogFilterProvider);
+    final templates = switch (catalogFilter) {
+      TemplateCatalogFilter.all => allTemplates,
+      TemplateCatalogFilter.free => TemplateRegistry.getFreeTemplates(),
+      TemplateCatalogFilter.pro => TemplateRegistry.getPremiumTemplates(),
+    };
     final selectedId = state.resume.templateId;
     final selected = TemplateRegistry.getTemplate(selectedId);
     final resumeData = state.resume.toJson()
       ..['photoBytes'] = state.photoBytes
       ..['contentLanguage'] = locale.languageCode;
+    final thumbnailData = ResumePageData.thumbnail(resumeData);
     final l10n = AppLocalizations.of(context)!;
+    const freeCount = TemplateRegistry.freeTemplateCount;
+    const proCount = TemplateRegistry.premiumTemplateCount;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -73,15 +85,17 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    GlassCard(
+                    const GlassCard(
                       showShadow: false,
                       blur: 12,
                       borderRadius: 8,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 6,
+                      ),
                       child: Text(
-                        '${templates.length} ${locale.languageCode == 'tr' ? 'şablon' : 'templates'}',
-                        style: const TextStyle(
+                        '$freeCount FREE · $proCount PRO',
+                        style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 9,
                           fontWeight: FontWeight.w600,
@@ -106,18 +120,25 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
                           color: AppColors.primary.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.layers_outlined,
-                            color: AppColors.primaryLight, size: 17),
+                        child: const Icon(
+                          Icons.layers_outlined,
+                          color: AppColors.primaryLight,
+                          size: 17,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Selected template',
-                              style: TextStyle(
-                                  color: AppColors.textMuted, fontSize: 9),
+                            Text(
+                              locale.languageCode == 'tr'
+                                  ? 'Seçili şablon'
+                                  : 'Selected template',
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 9,
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
@@ -146,6 +167,36 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: Row(
+                  children: [
+                    _CatalogFilterChip(
+                      label: locale.languageCode == 'tr' ? 'Tümü' : 'All',
+                      selected: catalogFilter == TemplateCatalogFilter.all,
+                      onTap: () => ref
+                          .read(templateCatalogFilterProvider.notifier)
+                          .state = TemplateCatalogFilter.all,
+                    ),
+                    const SizedBox(width: 8),
+                    _CatalogFilterChip(
+                      label: 'FREE',
+                      selected: catalogFilter == TemplateCatalogFilter.free,
+                      onTap: () => ref
+                          .read(templateCatalogFilterProvider.notifier)
+                          .state = TemplateCatalogFilter.free,
+                    ),
+                    const SizedBox(width: 8),
+                    _CatalogFilterChip(
+                      label: 'PRO',
+                      selected: catalogFilter == TemplateCatalogFilter.pro,
+                      onTap: () => ref
+                          .read(templateCatalogFilterProvider.notifier)
+                          .state = TemplateCatalogFilter.pro,
+                    ),
+                  ],
+                ),
+              ),
               Expanded(
                 child: GridView.builder(
                   physics: const BouncingScrollPhysics(),
@@ -154,58 +205,63 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 0.63,
+                    childAspectRatio: 0.657,
                   ),
                   itemCount: templates.length,
                   itemBuilder: (context, index) {
                     final template = templates[index];
+                    final isSelected = template.config.id == selectedId;
+                    final cardData = Map<String, dynamic>.from(thumbnailData)
+                      ..['templateId'] = template.config.id
+                      ..['templateColorIndex'] =
+                          isSelected ? state.resume.templateColorIndex : 0;
                     return _TemplateCard(
                       template: template,
-                      resumeData: resumeData,
-                      selected: template.config.id == selectedId,
-                      onTap: () => notifier.setTemplateId(template.config.id),
+                      resumeData: cardData,
+                      selected: isSelected,
+                      onTap: () => _openTemplatePreview(
+                        context,
+                        ref,
+                        notifier,
+                        l10n,
+                        template,
+                      ),
                     );
                   },
                 ),
               ),
-              GlassCard(
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                borderRadius: 14,
-                blur: 22,
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: AppButton(
-                        text: l10n.saveOnly,
-                        icon: Icons.download_outlined,
-                        isSecondary: true,
-                        compact: true,
-                        onPressed: () =>
-                            _saveOnly(context, ref, notifier, l10n),
-                      ),
-                    ),
-                    const SizedBox(width: 9),
-                    Expanded(
-                      child: AppButton(
-                        text: l10n.saveAndPdf,
-                        icon: Icons.picture_as_pdf_outlined,
-                        compact: true,
-                        onPressed: () => _saveAndExport(
-                          context,
-                          ref,
-                          notifier,
-                          l10n,
-                          selected,
-                          resumeData,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openTemplatePreview(
+    BuildContext context,
+    WidgetRef ref,
+    ResumeEditorNotifier notifier,
+    AppLocalizations l10n,
+    BaseResumeTemplate template,
+  ) async {
+    notifier.setTemplateId(template.config.id);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: false,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: .74),
+      builder: (sheetContext) => TemplatePreviewSheet(
+        template: template,
+        onSaveOnly: (modalContext) =>
+            _saveOnly(modalContext, ref, notifier, l10n),
+        onSaveAndExport: (modalContext, modalResumeData) => _saveAndExport(
+          modalContext,
+          ref,
+          notifier,
+          l10n,
+          template,
+          modalResumeData,
         ),
       ),
     );
@@ -218,15 +274,11 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
     AppLocalizations l10n,
   ) async {
     final result = await _saveResume(ref, notifier);
-    if (!context.mounted) {
-      return;
-    }
+    if (!context.mounted) return;
     if (result == SaveResult.proRequired) {
       _showProPaywall(context, l10n);
       return;
     }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l10n.cvSavedSuccess)));
     context.go('/');
   }
 
@@ -239,9 +291,7 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
     Map<String, dynamic> resumeData,
   ) async {
     final result = await _saveResume(ref, notifier);
-    if (!context.mounted) {
-      return;
-    }
+    if (!context.mounted) return;
     if (result == SaveResult.proRequired) {
       _showProPaywall(context, l10n);
       return;
@@ -249,7 +299,10 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(l10n.cvSavedDownloading)));
     await PdfExporter.savePdf(
-        template: template, resumeData: resumeData, context: context);
+      template: template,
+      resumeData: resumeData,
+      context: context,
+    );
     if (context.mounted) context.go('/');
   }
 
@@ -260,17 +313,18 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
     final result = notifier.saveCurrentResume(
       ref.read(savedResumesProvider.notifier),
       isPro: ref.read(isProUserProvider),
+      selectedTemplateIsPremium:
+          TemplateRegistry.getTemplate(notifier.currentResume.templateId)
+              .config
+              .isPremium,
     );
-    if (result != SaveResult.success) {
-      return result;
-    }
+    if (result != SaveResult.success) return result;
 
     final currentResume = notifier.currentResume;
     final localId = currentResume.id;
     final syncedResume = await ref
         .read(supabaseResumeSyncServiceProvider)
         .saveResume(currentResume);
-    // The persisted record is authoritative; dashboard reload will reflect it.
     if (syncedResume.id != localId) {
       notifier.loadResume(syncedResume);
     }
@@ -299,18 +353,59 @@ class SoftGlassTemplateSelectionScreen extends ConsumerWidget {
   }
 }
 
-class _TemplateCard extends StatelessWidget {
-  final BaseResumeTemplate template;
-  final Map<String, dynamic> resumeData;
+class _CatalogFilterChip extends StatelessWidget {
+  const _CatalogFilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
   final bool selected;
   final VoidCallback onTap;
 
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.28)
+              : AppColors.glassBackground,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected ? AppColors.primaryLight : AppColors.glassBorder,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? AppColors.textPrimary : AppColors.textSecondary,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TemplateCard extends StatelessWidget {
   const _TemplateCard({
     required this.template,
     required this.resumeData,
     required this.selected,
     required this.onTap,
   });
+
+  final BaseResumeTemplate template;
+  final Map<String, dynamic> resumeData;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -329,16 +424,26 @@ class _TemplateCard extends StatelessWidget {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(7),
-                child: ColoredBox(
-                  color: Colors.white,
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    alignment: Alignment.topCenter,
-                    child: SizedBox(
-                      width: 380,
-                      height: 540,
-                      child: template.buildPreview(resumeData),
-                    ),
+                child: DecoratedBox(
+                  position: DecorationPosition.foreground,
+                  decoration: BoxDecoration(
+                    border: template.config.isPremium
+                        ? Border.all(color: AppColors.warning, width: 1.4)
+                        : null,
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      const ColoredBox(color: Colors.white),
+                      FittedBox(
+                        fit: BoxFit.contain,
+                        alignment: Alignment.topCenter,
+                        child: ResumeTemplateCanvas(
+                          template: template,
+                          resumeData: resumeData,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -359,8 +464,26 @@ class _TemplateCard extends StatelessWidget {
                   ),
                 ),
                 if (template.config.isPremium)
-                  const Icon(Icons.diamond_outlined,
-                      color: AppColors.warning, size: 13),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: .16),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(
+                        color: AppColors.warning.withValues(alpha: .8),
+                      ),
+                    ),
+                    child: const Text(
+                      'PRO',
+                      style: TextStyle(
+                        color: AppColors.warning,
+                        fontSize: 7,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: .7,
+                      ),
+                    ),
+                  ),
                 const SizedBox(width: 5),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
@@ -376,8 +499,11 @@ class _TemplateCard extends StatelessWidget {
                     ),
                   ),
                   child: selected
-                      ? const Icon(Icons.check_rounded,
-                          color: Colors.white, size: 11)
+                      ? const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 11,
+                        )
                       : null,
                 ),
               ],

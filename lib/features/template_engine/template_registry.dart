@@ -1,15 +1,14 @@
 import 'domain/entities/template_config.dart';
 import 'templates/ats_classic_template.dart';
-import 'templates/ats_pure_template.dart';
+
 import 'templates/modern_clean_template.dart';
-import 'templates/modern_creative_template.dart';
-import 'templates/executive_minimal_template.dart';
+
 import 'templates/executive_pro_template.dart';
 import 'templates/global_templates.dart';
+import 'templates/signature_resume_templates.dart';
 
 /// Central registry managing international standard resume templates.
-/// Free Tier: Auckland, Edinburgh, Princeton, ATS Classic, ATS Pure
-/// Premium Tier: Otago, Berkeley, Harvard, Stanford, Cambridge, Oxford, Modern Clean, Executive Pro
+/// Free tier favors ATS readability; PRO adds executive and editorial layouts.
 class TemplateRegistry {
   static final List<BaseResumeTemplate> _templates = [
     AucklandTemplate(),
@@ -17,14 +16,21 @@ class TemplateRegistry {
     PrincetonTemplate(),
     OtagoTemplate(),
     BerkeleyTemplate(),
-    HarvardTemplate(),
-    StanfordTemplate(),
     CambridgeTemplate(),
-    OxfordTemplate(),
     AtsClassicTemplate(),
     ModernCleanTemplate(),
+    SignatureResumeTemplate.lisbon(),
+    SignatureResumeTemplate.toronto(),
+    HarvardTemplate(),
+    StanfordTemplate(),
+    OxfordTemplate(),
     ExecutiveProTemplate(),
+    SignatureResumeTemplate.monaco(),
+    SignatureResumeTemplate.tokyo(),
   ];
+
+  static const int freeTemplateCount = 10;
+  static const int premiumTemplateCount = 6;
 
   /// Returns all available templates
   static List<BaseResumeTemplate> getAll() => _templates;

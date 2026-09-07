@@ -26,6 +26,7 @@ mixin _$ResumeEntity {
   String get contentLanguage =>
       throw _privateConstructorUsedError; // 'en' or 'tr'
   String get templateId => throw _privateConstructorUsedError;
+  int get templateColorIndex => throw _privateConstructorUsedError;
   HeaderInfo get header => throw _privateConstructorUsedError;
   List<WorkExperience> get workExperiences =>
       throw _privateConstructorUsedError;
@@ -61,6 +62,7 @@ abstract class $ResumeEntityCopyWith<$Res> {
       String title,
       String contentLanguage,
       String templateId,
+      int templateColorIndex,
       HeaderInfo header,
       List<WorkExperience> workExperiences,
       List<Education> educationList,
@@ -98,6 +100,7 @@ class _$ResumeEntityCopyWithImpl<$Res, $Val extends ResumeEntity>
     Object? title = null,
     Object? contentLanguage = null,
     Object? templateId = null,
+    Object? templateColorIndex = null,
     Object? header = null,
     Object? workExperiences = null,
     Object? educationList = null,
@@ -135,6 +138,10 @@ class _$ResumeEntityCopyWithImpl<$Res, $Val extends ResumeEntity>
           ? _value.templateId
           : templateId // ignore: cast_nullable_to_non_nullable
               as String,
+      templateColorIndex: null == templateColorIndex
+          ? _value.templateColorIndex
+          : templateColorIndex // ignore: cast_nullable_to_non_nullable
+              as int,
       header: null == header
           ? _value.header
           : header // ignore: cast_nullable_to_non_nullable
@@ -221,6 +228,7 @@ abstract class _$$ResumeEntityImplCopyWith<$Res>
       String title,
       String contentLanguage,
       String templateId,
+      int templateColorIndex,
       HeaderInfo header,
       List<WorkExperience> workExperiences,
       List<Education> educationList,
@@ -257,6 +265,7 @@ class __$$ResumeEntityImplCopyWithImpl<$Res>
     Object? title = null,
     Object? contentLanguage = null,
     Object? templateId = null,
+    Object? templateColorIndex = null,
     Object? header = null,
     Object? workExperiences = null,
     Object? educationList = null,
@@ -294,6 +303,10 @@ class __$$ResumeEntityImplCopyWithImpl<$Res>
           ? _value.templateId
           : templateId // ignore: cast_nullable_to_non_nullable
               as String,
+      templateColorIndex: null == templateColorIndex
+          ? _value.templateColorIndex
+          : templateColorIndex // ignore: cast_nullable_to_non_nullable
+              as int,
       header: null == header
           ? _value.header
           : header // ignore: cast_nullable_to_non_nullable
@@ -367,6 +380,7 @@ class _$ResumeEntityImpl implements _ResumeEntity {
       required this.title,
       this.contentLanguage = 'en',
       this.templateId = 'ats_classic',
+      this.templateColorIndex = 0,
       required this.header,
       final List<WorkExperience> workExperiences = const [],
       final List<Education> educationList = const [],
@@ -407,6 +421,9 @@ class _$ResumeEntityImpl implements _ResumeEntity {
   @override
   @JsonKey()
   final String templateId;
+  @override
+  @JsonKey()
+  final int templateColorIndex;
   @override
   final HeaderInfo header;
   final List<WorkExperience> _workExperiences;
@@ -493,7 +510,7 @@ class _$ResumeEntityImpl implements _ResumeEntity {
 
   @override
   String toString() {
-    return 'ResumeEntity(id: $id, userId: $userId, title: $title, contentLanguage: $contentLanguage, templateId: $templateId, header: $header, workExperiences: $workExperiences, educationList: $educationList, skills: $skills, projects: $projects, certifications: $certifications, languages: $languages, customSections: $customSections, createdAt: $createdAt, updatedAt: $updatedAt, summary: $summary, photoPath: $photoPath, isSynced: $isSynced, schemaVersion: $schemaVersion, atsScore: $atsScore)';
+    return 'ResumeEntity(id: $id, userId: $userId, title: $title, contentLanguage: $contentLanguage, templateId: $templateId, templateColorIndex: $templateColorIndex, header: $header, workExperiences: $workExperiences, educationList: $educationList, skills: $skills, projects: $projects, certifications: $certifications, languages: $languages, customSections: $customSections, createdAt: $createdAt, updatedAt: $updatedAt, summary: $summary, photoPath: $photoPath, isSynced: $isSynced, schemaVersion: $schemaVersion, atsScore: $atsScore)';
   }
 
   @override
@@ -508,6 +525,8 @@ class _$ResumeEntityImpl implements _ResumeEntity {
                 other.contentLanguage == contentLanguage) &&
             (identical(other.templateId, templateId) ||
                 other.templateId == templateId) &&
+            (identical(other.templateColorIndex, templateColorIndex) ||
+                other.templateColorIndex == templateColorIndex) &&
             (identical(other.header, header) || other.header == header) &&
             const DeepCollectionEquality()
                 .equals(other._workExperiences, _workExperiences) &&
@@ -545,6 +564,7 @@ class _$ResumeEntityImpl implements _ResumeEntity {
         title,
         contentLanguage,
         templateId,
+        templateColorIndex,
         header,
         const DeepCollectionEquality().hash(_workExperiences),
         const DeepCollectionEquality().hash(_educationList),
@@ -583,6 +603,7 @@ abstract class _ResumeEntity implements ResumeEntity {
       required final String title,
       final String contentLanguage,
       final String templateId,
+      final int templateColorIndex,
       required final HeaderInfo header,
       final List<WorkExperience> workExperiences,
       final List<Education> educationList,
@@ -612,6 +633,8 @@ abstract class _ResumeEntity implements ResumeEntity {
   String get contentLanguage;
   @override // 'en' or 'tr'
   String get templateId;
+  @override
+  int get templateColorIndex;
   @override
   HeaderInfo get header;
   @override
@@ -2360,9 +2383,7 @@ class __$$LanguageProficiencyImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$LanguageProficiencyImpl implements _LanguageProficiency {
   const _$LanguageProficiencyImpl(
-      {this.id = '',
-      required this.language,
-      this.proficiency = 'Intermediate'});
+      {this.id = '', required this.language, this.proficiency = ''});
 
   factory _$LanguageProficiencyImpl.fromJson(Map<String, dynamic> json) =>
       _$$LanguageProficiencyImplFromJson(json);

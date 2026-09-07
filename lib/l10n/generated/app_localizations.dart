@@ -260,6 +260,12 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get delete;
 
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
   /// No description provided for @headerStep.
   ///
   /// In en, this message translates to:
@@ -464,6 +470,12 @@ abstract class AppLocalizations {
   /// **'Add Work Experience'**
   String get addExperience;
 
+  /// No description provided for @noExperiencesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to add your first role.'**
+  String get noExperiencesYet;
+
   /// No description provided for @education.
   ///
   /// In en, this message translates to:
@@ -524,11 +536,23 @@ abstract class AppLocalizations {
   /// **'I currently study here'**
   String get currentlyStudyHere;
 
+  /// No description provided for @noEducationYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to add education.'**
+  String get noEducationYet;
+
   /// No description provided for @skillsCompetencies.
   ///
   /// In en, this message translates to:
   /// **'Skills & Competencies'**
   String get skillsCompetencies;
+
+  /// No description provided for @skill.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill'**
+  String get skill;
 
   /// No description provided for @skillHint.
   ///
@@ -785,7 +809,7 @@ abstract class AppLocalizations {
   /// No description provided for @proRequiredMessage.
   ///
   /// In en, this message translates to:
-  /// **'Free users can save up to 3 resumes. Upgrade to AI CV Builder Pro to save unlimited resumes and unlock premium templates.'**
+  /// **'Resume creation and PDF export are free. Upgrade to AI CV Builder Pro to unlock selected PRO templates.'**
   String get proRequiredMessage;
 
   /// No description provided for @upgradeToPro.
@@ -817,6 +841,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy'**
   String get copySuffix;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// No description provided for @scanJobDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Job Description'**
+  String get scanJobDescription;
+
+  /// No description provided for @resumeScoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Resume Score'**
+  String get resumeScoreTitle;
+
+  /// No description provided for @scoreStructure.
+  ///
+  /// In en, this message translates to:
+  /// **'Structure'**
+  String get scoreStructure;
+
+  /// No description provided for @scoreContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get scoreContent;
+
+  /// No description provided for @scoreKeywords.
+  ///
+  /// In en, this message translates to:
+  /// **'Keywords'**
+  String get scoreKeywords;
+
+  /// No description provided for @improveNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Improve now'**
+  String get improveNow;
+
+  /// No description provided for @previewCv.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview your CV'**
+  String get previewCv;
+
+  /// No description provided for @previewCvSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A calm full-screen review before export.'**
+  String get previewCvSubtitle;
+
+  /// No description provided for @versionHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Version history'**
+  String get versionHistory;
+
+  /// No description provided for @preparingPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing PDF...'**
+  String get preparingPdf;
 }
 
 class _AppLocalizationsDelegate

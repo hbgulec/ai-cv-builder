@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/soft_glass_shell.dart';
 import '../../data/services/supabase_account_service.dart';
+import '../providers/resume_provider.dart';
 
 class AccountScreen extends ConsumerStatefulWidget {
   const AccountScreen({super.key});
@@ -73,6 +75,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     final service = ref.watch(supabaseAccountServiceProvider);
     final user = service.currentUser;
     final isGuest = service.isAnonymous;
+    final isPro = ref.watch(isProUserProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -150,6 +153,38 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                     ],
                   ),
                 ),
+                if (kDebugMode) ...[
+                  const SizedBox(height: 16),
+                  GlassCard(
+                    showShadow: false,
+                    child: SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      value: isPro,
+                      onChanged: (value) =>
+                          ref.read(isProUserProvider.notifier).state = value,
+                      title: const Text(
+                        'Developer Tools: PRO test erişimi',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Yalnızca debug derlemelerde görünür. PRO şablonları ve akışlarını test etmek için kullanın.',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                          height: 1.4,
+                        ),
+                      ),
+                      secondary: const Icon(
+                        Icons.developer_mode_outlined,
+                        color: AppColors.primaryLight,
+                      ),
+                    ),
+                  ),
+                ],
                 if (isGuest || _useExistingAccount) ...[
                   const SizedBox(height: 16),
                   GlassCard(

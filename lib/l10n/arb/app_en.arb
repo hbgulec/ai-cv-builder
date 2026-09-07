@@ -30,6 +30,7 @@
   "downloadPdf": "Download PDF",
   "view": "View",
   "delete": "Delete",
+  "save": "Save",
 
   "headerStep": "Contact Info",
   "summaryStep": "Summary",
@@ -69,6 +70,7 @@
   "bulletPointsLabel": "Achievements / Responsibilities (one per line)",
   "bulletPointsHint": "e.g. Engineered high-performance cross-platform Flutter applications.",
   "addExperience": "Add Work Experience",
+  "noExperiencesYet": "Tap + to add your first role.",
 
   "education": "Education",
   "newEducation": "New Education",
@@ -80,8 +82,10 @@
   "gpaHint": "e.g. 3.8/4.0",
   "addEducation": "Add Education",
   "currentlyStudyHere": "I currently study here",
+  "noEducationYet": "Tap + to add education.",
 
   "skillsCompetencies": "Skills & Competencies",
+  "skill": "Skill",
   "skillHint": "Add a skill (e.g. Flutter, Dart, Riverpod)...",
   "addSkill": "Add",
   "skills": "Skills & Technologies",
@@ -131,11 +135,22 @@
   "confirmDelete": "Delete",
 
   "proRequired": "Upgrade to Pro",
-  "proRequiredMessage": "Free users can save up to 3 resumes. Upgrade to AI CV Builder Pro to save unlimited resumes and unlock premium templates.",
+  "proRequiredMessage": "Resume creation and PDF export are free. Upgrade to AI CV Builder Pro to unlock selected PRO templates.",
   "upgradeToPro": "Upgrade to Pro",
   "maybeLater": "Maybe Later",
 
   "duplicate": "Duplicate",
   "resumeDuplicated": "Resume duplicated successfully!",
-  "copySuffix": "Copy"
+  "copySuffix": "Copy",
+  "getStarted": "Get Started",
+  "scanJobDescription": "Scan Job Description",
+  "resumeScoreTitle": "Your Resume Score",
+  "scoreStructure": "Structure",
+  "scoreContent": "Content",
+  "scoreKeywords": "Keywords",
+  "improveNow": "Improve now",
+  "previewCv": "Preview your CV",
+  "previewCvSubtitle": "A calm full-screen review before export.",
+  "versionHistory": "Version history",
+  "preparingPdf": "Preparing PDF..."
 }

@@ -14,7 +14,8 @@ class ResumeDashboardScreen extends ConsumerStatefulWidget {
   const ResumeDashboardScreen({super.key});
 
   @override
-  ConsumerState<ResumeDashboardScreen> createState() => _ResumeDashboardScreenState();
+  ConsumerState<ResumeDashboardScreen> createState() =>
+      _ResumeDashboardScreenState();
 }
 
 class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
@@ -29,7 +30,8 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
 
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: AppColors.darkBackgroundGradient),
+        decoration:
+            const BoxDecoration(gradient: AppColors.darkBackgroundGradient),
         child: SafeArea(
           child: CustomScrollView(
             slivers: [
@@ -39,7 +41,8 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
                   child: _TopBar(
                     currentLocale: currentLocale,
                     l10n: l10n,
-                    onLocaleChanged: (code) => ref.read(localeProvider.notifier).state = Locale(code),
+                    onLocaleChanged: (code) =>
+                        ref.read(localeProvider.notifier).state = Locale(code),
                   ),
                 ),
               ),
@@ -54,18 +57,34 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.22)),
+                            border: Border.all(
+                                color:
+                                    AppColors.primary.withValues(alpha: 0.22)),
                           ),
-                          child: Text(l10n.heroBadge, style: const TextStyle(color: AppColors.primaryLight, fontWeight: FontWeight.w700, fontSize: 11)),
+                          child: Text(l10n.heroBadge,
+                              style: const TextStyle(
+                                  color: AppColors.primaryLight,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 11)),
                         ),
                         const SizedBox(height: 14),
-                        Text(l10n.heroTitle, style: const TextStyle(fontSize: 28, height: 1.05, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                        Text(l10n.heroTitle,
+                            style: const TextStyle(
+                                fontSize: 28,
+                                height: 1.05,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary)),
                         const SizedBox(height: 8),
-                        Text(l10n.heroSubtitle, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.45)),
+                        Text(l10n.heroSubtitle,
+                            style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                                height: 1.45)),
                         const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
@@ -85,9 +104,17 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
                 sliver: SliverToBoxAdapter(
                   child: Row(
                     children: [
-                      Expanded(child: _StatCard(label: 'Resumes', value: '${resumes.length}', accent: AppColors.primaryLight)),
+                      Expanded(
+                          child: _StatCard(
+                              label: 'Resumes',
+                              value: '${resumes.length}',
+                              accent: AppColors.primaryLight)),
                       const SizedBox(width: 10),
-                      Expanded(child: _StatCard(label: 'ATS Avg', value: '$atsAverage', accent: AppColors.success)),
+                      Expanded(
+                          child: _StatCard(
+                              label: 'ATS Avg',
+                              value: '$atsAverage',
+                              accent: AppColors.success)),
                     ],
                   ),
                 ),
@@ -98,10 +125,17 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(l10n.yourResumes, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                      Text(l10n.yourResumes,
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary)),
                       TextButton(
-                        onPressed: resumes.isEmpty ? null : () => setState(() => _isEditMode = !_isEditMode),
-                        child: Text(_isEditMode ? l10n.done : l10n.editYourResumes),
+                        onPressed: resumes.isEmpty
+                            ? null
+                            : () => setState(() => _isEditMode = !_isEditMode),
+                        child: Text(
+                            _isEditMode ? l10n.done : l10n.editYourResumes),
                       ),
                     ],
                   ),
@@ -116,9 +150,12 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.article_outlined, size: 54, color: AppColors.textMuted),
+                          const Icon(Icons.article_outlined,
+                              size: 54, color: AppColors.textMuted),
                           const SizedBox(height: 12),
-                          Text(l10n.noResumesYet, style: const TextStyle(color: AppColors.textSecondary)),
+                          Text(l10n.noResumesYet,
+                              style: const TextStyle(
+                                  color: AppColors.textSecondary)),
                           const SizedBox(height: 16),
                           SizedBox(
                             width: double.infinity,
@@ -141,8 +178,10 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final resume = resumes[index];
-                      final template = TemplateRegistry.getTemplate(resume.templateId);
-                      final resumeData = resume.toJson()..['contentLanguage'] = currentLocale.languageCode;
+                      final template =
+                          TemplateRegistry.getTemplate(resume.templateId);
+                      final resumeData = resume.toJson()
+                        ..['contentLanguage'] = currentLocale.languageCode;
 
                       return _ResumeCard(
                         resume: resume,
@@ -151,8 +190,10 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
                         isEditMode: _isEditMode,
                         onOpen: () => context.push('/view?id=${resume.id}'),
                         onEdit: () => context.push('/editor?id=${resume.id}'),
-                        onDelete: () => _showDeleteConfirmation(context, l10n, resume.id),
-                        onDuplicate: () => _duplicateResume(context, l10n, resume),
+                        onDelete: () =>
+                            _showDeleteConfirmation(context, l10n, resume.id),
+                        onDuplicate: () =>
+                            _duplicateResume(context, l10n, resume),
                         onPdf: () async {
                           await PdfExporter.savePdf(
                             template: template,
@@ -176,9 +217,18 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
           if (index == 2) context.push('/editor');
         },
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.layers_outlined), selectedIcon: Icon(Icons.layers_rounded), label: 'Templates'),
-          NavigationDestination(icon: Icon(Icons.edit_outlined), selectedIcon: Icon(Icons.edit_rounded), label: 'Editor'),
+          NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Home'),
+          NavigationDestination(
+              icon: Icon(Icons.layers_outlined),
+              selectedIcon: Icon(Icons.layers_rounded),
+              label: 'Templates'),
+          NavigationDestination(
+              icon: Icon(Icons.edit_outlined),
+              selectedIcon: Icon(Icons.edit_rounded),
+              label: 'Editor'),
         ],
       ),
     );
@@ -186,24 +236,31 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
 
   int _averageAts(List<dynamic> resumes) {
     if (resumes.isEmpty) return 0;
-    final total = resumes.fold<int>(0, (sum, item) => sum + (item.atsScore as int));
+    final total =
+        resumes.fold<int>(0, (sum, item) => sum + (item.atsScore as int));
     return (total / resumes.length).round();
   }
 
-  void _showDeleteConfirmation(BuildContext context, AppLocalizations l10n, String resumeId) {
+  void _showDeleteConfirmation(
+      BuildContext context, AppLocalizations l10n, String resumeId) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.darkSurface,
-        title: Text(l10n.deleteResumeTitle, style: const TextStyle(color: AppColors.textPrimary)),
-        content: Text(l10n.deleteResumeMessage, style: const TextStyle(color: AppColors.textSecondary)),
+        title: Text(l10n.deleteResumeTitle,
+            style: const TextStyle(color: AppColors.textPrimary)),
+        content: Text(l10n.deleteResumeMessage,
+            style: const TextStyle(color: AppColors.textSecondary)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10n.cancel)),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               final notifier = ref.read(savedResumesProvider.notifier);
-              notifier.state = notifier.state.where((r) => r.id != resumeId).toList();
+              notifier.state =
+                  notifier.state.where((r) => r.id != resumeId).toList();
               if (notifier.state.isEmpty) setState(() => _isEditMode = false);
             },
             child: Text(l10n.confirmDelete),
@@ -213,36 +270,19 @@ class _ResumeDashboardScreenState extends ConsumerState<ResumeDashboardScreen> {
     );
   }
 
-  void _duplicateResume(BuildContext context, AppLocalizations l10n, ResumeEntity original) {
+  void _duplicateResume(
+      BuildContext context, AppLocalizations l10n, ResumeEntity original) {
     final resumes = ref.read(savedResumesProvider);
-    final isPro = ref.read(isProUserProvider);
-    if (!isPro && resumes.length >= 3) {
-      _showProPaywall(context, l10n);
-      return;
-    }
 
     final duplicated = original.copyWith(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: original.title.isEmpty ? 'CV (${l10n.copySuffix})' : '${original.title} (${l10n.copySuffix})',
+      title: original.title.isEmpty
+          ? 'CV (${l10n.copySuffix})'
+          : '${original.title} (${l10n.copySuffix})',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
     ref.read(savedResumesProvider.notifier).state = [...resumes, duplicated];
-  }
-
-  void _showProPaywall(BuildContext context, AppLocalizations l10n) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.darkSurface,
-        title: Text(l10n.proRequired, style: const TextStyle(color: AppColors.textPrimary)),
-        content: Text(l10n.proRequiredMessage, style: const TextStyle(color: AppColors.textSecondary)),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10n.maybeLater)),
-          ElevatedButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10n.upgradeToPro)),
-        ],
-      ),
-    );
   }
 }
 
@@ -251,7 +291,10 @@ class _TopBar extends StatelessWidget {
   final AppLocalizations l10n;
   final ValueChanged<String> onLocaleChanged;
 
-  const _TopBar({required this.currentLocale, required this.l10n, required this.onLocaleChanged});
+  const _TopBar(
+      {required this.currentLocale,
+      required this.l10n,
+      required this.onLocaleChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -273,13 +316,17 @@ class _TopBar extends StatelessWidget {
             children: [
               Text(
                 l10n.appTitle,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
                 l10n.atsOptimizedSub,
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                style: const TextStyle(
+                    fontSize: 12, color: AppColors.textSecondary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -302,7 +349,8 @@ class _TopBar extends StatelessWidget {
             ),
             child: Text(
               currentLocale.languageCode == 'tr' ? 'TR' : 'EN',
-              style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700),
+              style: const TextStyle(
+                  color: AppColors.textPrimary, fontWeight: FontWeight.w700),
             ),
           ),
         ),
@@ -310,7 +358,8 @@ class _TopBar extends StatelessWidget {
         ElevatedButton(
           onPressed: () => context.push('/editor'),
           style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
           child: const Icon(Icons.add_rounded, size: 18),
@@ -325,7 +374,8 @@ class _StatCard extends StatelessWidget {
   final String value;
   final Color accent;
 
-  const _StatCard({required this.label, required this.value, required this.accent});
+  const _StatCard(
+      {required this.label, required this.value, required this.accent});
 
   @override
   Widget build(BuildContext context) {
@@ -336,9 +386,13 @@ class _StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          Text(label,
+              style: const TextStyle(
+                  color: AppColors.textSecondary, fontSize: 12)),
           const SizedBox(height: 8),
-          Text(value, style: TextStyle(color: accent, fontSize: 26, fontWeight: FontWeight.w800)),
+          Text(value,
+              style: TextStyle(
+                  color: accent, fontSize: 26, fontWeight: FontWeight.w800)),
         ],
       ),
     );
@@ -386,14 +440,18 @@ class _ResumeCard extends StatelessWidget {
                   children: [
                     Text(
                       resume.title,
-                      style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 15),
+                      style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       resume.header.fullName,
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -405,33 +463,47 @@ class _ResumeCard extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 2),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                      width: 2),
                 ),
                 child: Center(
                   child: Text(
                     '$atsScore',
-                    style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w800),
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          Text(templateName, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+          Text(templateName,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: OutlinedButton(onPressed: onEdit, child: const Text('Edit'))),
+              Expanded(
+                  child: OutlinedButton(
+                      onPressed: onEdit, child: const Text('Edit'))),
               const SizedBox(width: 8),
-              Expanded(child: ElevatedButton(onPressed: onPdf, child: const Text('PDF'))),
+              Expanded(
+                  child: ElevatedButton(
+                      onPressed: onPdf, child: const Text('PDF'))),
             ],
           ),
           if (isEditMode) ...[
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: TextButton(onPressed: onDuplicate, child: const Text('Duplicate'))),
-                Expanded(child: TextButton(onPressed: onDelete, child: const Text('Delete'))),
+                Expanded(
+                    child: TextButton(
+                        onPressed: onDuplicate,
+                        child: const Text('Duplicate'))),
+                Expanded(
+                    child: TextButton(
+                        onPressed: onDelete, child: const Text('Delete'))),
               ],
             ),
           ],

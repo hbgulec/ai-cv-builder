@@ -30,6 +30,7 @@
   "downloadPdf": "PDF İndir",
   "view": "Görüntüle",
   "delete": "Sil",
+  "save": "Kaydet",
 
   "headerStep": "İletişim Bilgileri",
   "summaryStep": "Özet",
@@ -69,6 +70,7 @@
   "bulletPointsLabel": "Başarılar / Sorumluluklar (Her satıra bir madde)",
   "bulletPointsHint": "Örn: Yüksek performanslı Flutter uygulamaları geliştirdim.",
   "addExperience": "İş Deneyimi Ekle",
+  "noExperiencesYet": "İlk deneyiminizi eklemek için + düğmesine dokunun.",
 
   "education": "Eğitim",
   "newEducation": "Yeni Eğitim",
@@ -80,8 +82,10 @@
   "gpaHint": "Örn: 3.5/4.0",
   "addEducation": "Eğitim Ekle",
   "currentlyStudyHere": "Halen eğitim görüyorum",
+  "noEducationYet": "Eğitim eklemek için + düğmesine dokunun.",
 
   "skillsCompetencies": "Yetenekler & Yetkinlikler",
+  "skill": "Yetenek",
   "skillHint": "Yetenek ekleyin (Örn: Flutter, Dart, Riverpod)...",
   "addSkill": "Ekle",
   "skills": "Yetenekler & Teknolojiler",
@@ -131,11 +135,22 @@
   "confirmDelete": "Sil",
 
   "proRequired": "Pro'ya Yükselt",
-  "proRequiredMessage": "Ücretsiz kullanıcılar en fazla 3 CV kaydedebilir. Sınırsız CV kaydetmek ve premium şablonların kilidini açmak için AI CV Builder Pro'ya yükseltin.",
+  "proRequiredMessage": "CV oluşturma ve PDF dışa aktarma ücretsizdir. Özel PRO şablonların kilidini açmak için AI CV Builder Pro'ya yükseltin.",
   "upgradeToPro": "Pro'ya Yükselt",
   "maybeLater": "Daha Sonra",
 
   "duplicate": "Çoğalt",
   "resumeDuplicated": "CV başarıyla çoğaltıldı!",
-  "copySuffix": "Kopyası"
+  "copySuffix": "Kopyası",
+  "getStarted": "Başlayın",
+  "scanJobDescription": "İlan Tara",
+  "resumeScoreTitle": "Özgeçmiş Puanınız",
+  "scoreStructure": "Yapı",
+  "scoreContent": "İçerik",
+  "scoreKeywords": "Anahtar Kelimeler",
+  "improveNow": "Şimdi geliştir",
+  "previewCv": "CV'nizi önizleyin",
+  "previewCvSubtitle": "Dışa aktarmadan önce tam ekran inceleyin.",
+  "versionHistory": "Sürüm geçmişi",
+  "preparingPdf": "PDF hazırlanıyor..."
 }

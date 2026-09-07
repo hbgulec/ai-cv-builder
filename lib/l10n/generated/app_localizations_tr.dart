@@ -98,6 +98,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get delete => 'Sil';
 
   @override
+  String get save => 'Kaydet';
+
+  @override
   String get headerStep => 'İletişim Bilgileri';
 
   @override
@@ -203,6 +206,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get addExperience => 'İş Deneyimi Ekle';
 
   @override
+  String get noExperiencesYet =>
+      'İlk deneyiminizi eklemek için + düğmesine dokunun.';
+
+  @override
   String get education => 'Eğitim';
 
   @override
@@ -233,7 +240,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get currentlyStudyHere => 'Halen eğitim görüyorum';
 
   @override
+  String get noEducationYet => 'Eğitim eklemek için + düğmesine dokunun.';
+
+  @override
   String get skillsCompetencies => 'Yetenekler & Yetkinlikler';
+
+  @override
+  String get skill => 'Yetenek';
 
   @override
   String get skillHint => 'Yetenek ekleyin (Örn: Flutter, Dart, Riverpod)...';
@@ -369,7 +382,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get proRequiredMessage =>
-      'Ücretsiz kullanıcılar en fazla 3 CV kaydedebilir. Sınırsız CV kaydetmek ve premium şablonların kilidini açmak için AI CV Builder Pro\'ya yükseltin.';
+      'CV oluşturma ve PDF dışa aktarma ücretsizdir. Özel PRO şablonların kilidini açmak için AI CV Builder Pro\'ya yükseltin.';
 
   @override
   String get upgradeToPro => 'Pro\'ya Yükselt';
@@ -385,4 +398,37 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get copySuffix => 'Kopyası';
+
+  @override
+  String get getStarted => 'Başlayın';
+
+  @override
+  String get scanJobDescription => 'İlan Tara';
+
+  @override
+  String get resumeScoreTitle => 'Özgeçmiş Puanınız';
+
+  @override
+  String get scoreStructure => 'Yapı';
+
+  @override
+  String get scoreContent => 'İçerik';
+
+  @override
+  String get scoreKeywords => 'Anahtar Kelimeler';
+
+  @override
+  String get improveNow => 'Şimdi geliştir';
+
+  @override
+  String get previewCv => 'CV\'nizi önizleyin';
+
+  @override
+  String get previewCvSubtitle => 'Dışa aktarmadan önce tam ekran inceleyin.';
+
+  @override
+  String get versionHistory => 'Sürüm geçmişi';
+
+  @override
+  String get preparingPdf => 'PDF hazırlanıyor...';
 }

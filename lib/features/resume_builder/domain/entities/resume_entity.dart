@@ -13,6 +13,7 @@ class ResumeEntity with _$ResumeEntity {
     required String title,
     @Default('en') String contentLanguage, // 'en' or 'tr'
     @Default('ats_classic') String templateId,
+    @Default(0) int templateColorIndex,
     required HeaderInfo header,
     @Default([]) List<WorkExperience> workExperiences,
     @Default([]) List<Education> educationList,
@@ -141,7 +142,7 @@ class LanguageProficiency with _$LanguageProficiency {
   const factory LanguageProficiency({
     @Default('') String id,
     required String language,
-    @Default('Intermediate')
+    @Default('')
     String proficiency, // Native, Fluent, Advanced, Intermediate, Basic
   }) = _LanguageProficiency;
 
