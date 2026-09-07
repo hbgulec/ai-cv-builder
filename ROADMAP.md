@@ -7,7 +7,7 @@ when a scoped checkpoint has been implemented, verified, committed, and pushed.
 | --- | --- | --- | --- |
 | 0. Baseline | Verify the current app, restore missing core editor inputs, and create a Git checkpoint. | ✓ Complete | `500ca64` editor restoration and verified formatting checkpoint |
 | 1. Foundation | Supabase configuration, anonymous/email access, secure central resume storage, and sync. | ✓ Complete | `1410cbb` secure Supabase sync, anonymous-to-email upgrade, and verified RLS |
-| 2. Free CV product | Resume versioning and a catalog with 10 free and 6 PRO templates. | ○ Complete | Pending checkpoint commit |
+| 2. Free CV product | Resume versioning and a catalog with 10 free and 6 PRO templates. | ✓ Complete | `9ce3391` versioned resumes, 16 templates, measured pagination, localization, and verified editor/preview behavior |
 | 3. PRO application pack | Protected API, job intake, PDF import, AI comparison, and reviewed revisions. | ○ Not started | - |
 | 4. PRO interview | Timed interview sessions and AI evaluation reports. | ○ Not started | - |
 | 5. Billing and release | Subscription entitlement, audited support access, monitoring, and release checks. | ○ Not started | - |
